@@ -2,34 +2,71 @@ name: Update MangaDex Data
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Chạy mỗi 6 giờ
-  workflow_dispatch: # Cho phép chạy thủ công
+    - cron: '0 */6 * * *'  # Mỗi 6 giờ
+  workflow_dispatch:         # Cho phép chạy thủ công
 
 jobs:
-  update-data:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
-      - name: Install dependencies
-        run: npm install axios
-
-      - name: Run update script
-        run: node update-mangadex.js
-
-      - name: Commit and push if changes
+      - name: Fetch manga list from MangaDex
+        id: fetch
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+          # Lấy danh sách truyện Gender Swap + tiếng Việt
+          response=$(curl -s "https://api.mangadex.org/manga?includedTags=df4de92c-07ea-4af0-b794-2f7d9ec2acdb&availableTranslatedLanguage[vi]=1&limit=20&includes[]=cover_art")
+          echo "$response" > manga.json
+          # Trích xuất ID và title
+          echo "$response" | jq -r '.data[] | .id + "|" + (.attributes.title.vi // .attributes.title.en // "Unknown")' > manga-list.txt
+
+      - name: Update data.json
+        run: |
+          # Đọc data.json hiện tại (nếu chưa có thì tạo mới)
+          if [ ! -f data.json ]; then
+            echo '{"comics":[]}' > data.json
+          fi
+
+          # Đọc danh sách truyện hiện có
+          existing_ids=$(jq -r '.comics[].id' data.json | tr '\n' '|')
+          echo "Existing IDs: $existing_ids"
+
+          # Xử lý từng manga
+          while IFS='|' read -r manga_id title; do
+            if [[ "$existing_ids" != *"$manga_id"* ]]; then
+              # Tìm cover
+              cover_url="https://placehold.co/300x400/444/ccc?text=No+Image"
+              cover_info=$(curl -s "https://api.mangadex.org/manga/$manga_id?includes[]=cover_art")
+              cover_file=$(echo "$cover_info" | jq -r '.data.relationships[] | select(.type=="cover_art") | .attributes.fileName')
+              if [ -n "$cover_file" ]; then
+                cover_url="https://uploads.mangadex.org/covers/$manga_id/$cover_file.256.jpg"
+              fi
+
+              # Thêm vào data.json
+              new_comic=$(jq -n \
+                --arg id "md_$manga_id" \
+                --arg title "$title" \
+                --arg cover "$cover_url" \
+                '{id: $id, title: $title, desc: "", cover: $cover, chapters: []}')
+              
+              jq --argjson new "$new_comic" '.comics += [$new]' data.json > data.json.tmp && mv data.json.tmp data.json
+              echo "✅ Added: $title"
+            fi
+          done < manga-list.txt
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           git add data.json
-          if [[ -n $(git status --porcelain) ]]; then
-            git commit -m 'Update manga data from MangaDex'
-            git push
+          if git diff --quiet --staged; then
+            echo "No changes to commit"
+          else
+            git commit -m "🤖 Auto-update manga data from MangaDex"
+            git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
           fi
