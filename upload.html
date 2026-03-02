@@ -112,6 +112,7 @@
             border-radius: 6px;
             font-family: monospace;
         }
+        #progress {
             background: #3a3a3a;
             color: #ffcc00;
             display: none;
@@ -134,7 +135,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📤 Upload Truyện Mới</h1>
+        <h1> Mới / Cập nhật Chapter</h1>
 
         <div class="card">
             <label for="token">GitHub Token (PAT)</label>
@@ -142,10 +143,14 @@
         </div>
 
         <div class="card">
+            <label>ID truyện (bắt buộc)</label>
+            <input type="text" id="comic-id" required dụ: how_the_little_brother_who_turned_into_a_girl" />
             <label>Tên truyện</label>
             <input type="text" id="title" required />
+
             <label>Mô tả</label>
             <textarea id="description"></textarea>
+
             <label>Ảnh bìa</label>
             <div class="tabs">
                 <button class="tab-btn active" data-tab="upload-cover">📁 Tải file</button>
@@ -189,12 +194,12 @@
         </div>
 
         <div class="card">
-            <button class="btn" id="submit-btn">📤 Upload Truyện & Ảnh Lên GitHub</button>
-        </div>
+            <button class="btn" id="submit-btn">📤 Upload Truyện & Ảnh Lên GitHub</button>        </div>
 
         <div id="progress"></div>
         <div id="output"></div>
     </div>
+
     <script>
         const REPO_NAME = "gender-swap-world/gender-swap-world.github.io";
 
@@ -204,7 +209,7 @@
                 const tabType = btn.getAttribute('data-tab');
                 const group = tabType.split('-')[0];
                 btn.parentElement.querySelectorAll(`.tab-btn[data-tab^="${group}"]`).forEach(b => b.classList.remove('active'));
-                btn.parentElement.parentElement.querySelectorAll(`.${group(c => c.classList.remove('active'));
+                btn.parentElement.parentElement.querySelectorAll(`.${group}-content`).forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById(tabType).classList.add('active');
             });
@@ -238,12 +243,12 @@
                     <input type="file" multiple class="chapter-pages-upload" accept="image/*" />
                 </div>
                 <div id="url-pages-${chapterIndex}" class="tab-content">
-                    <textarea class="chapter-pages-url" placeholder="Dán URL ảnh, mỗi dòng 1 ảnh"></textarea>
-                </div>
+                    <textarea class="chapter-pages-url" placeholder="Dán URL ảnh, mỗi dòng 1 ảnh"></textarea>                </div>
             `;
             container.appendChild(pagesContainer);
 
-            // Setup tab            pagesContainer.querySelectorAll('.tab-btn').forEach(btn => {
+            // Setup tab
+            pagesContainer.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tabType = btn.getAttribute('data-tab');
                     btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -260,21 +265,19 @@
             });
         });
 
-        // Generate ID from title
-        function generateId(title) {
-            return title.toLowerCase()
-                .replace(/[^a-z0-9\s]/g, '') // Remove special chars
-                .replace(/\s+/g, '_');       // Replace spaces with _
-        }
-
         // Submit
         document.getElementById('submit-btn').addEventListener('click', async () => {
             const token = document.getElementById('token').value.trim();
+            const comicId = document.getElementById('comic-id').value.trim();
             const title = document.getElementById('title').value.trim();
             const desc = document.getElementById('description').value.trim();
 
             if (!token) {
                 showOutput('❌ Vui lòng nhập GitHub Token', 'error');
+                return;
+            }
+            if (!comicId) {
+                showOutput('❌ Vui lòng nhập ID truyện', 'error');
                 return;
             }
             if (!title) {
@@ -289,31 +292,9 @@
             output.style.display = 'none';
 
             try {
-                // Fetch current data.json
-                const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`);
+                // Fetch current data.json                const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`);
                 const json = await res.json();
                 const existing = JSON.parse(atob(json.content));
-                // Check duplicate ID
-                const newId = generateId(title);
-                if (existing.comics.some(c => c.id === newId)) {
-                    throw new Error('Truyện với tên này đã tồn tại (ID bị trùng)');
-                }
-
-                // Xử lý ảnh bìa
-                let coverUrl = '';
-                if (document.getElementById('upload-cover').classList.contains('active')) {
-                    const file = document.getElementById('cover-upload').files[0];
-                    if (file) {
-                        progress.textContent = '📷 Đang upload ảnh bìa...';
-                        coverUrl = await uploadFile(token, `covers/${Date.now()}_${file.name}`, file);
-                    } else {
-                        throw new Error('Vui lòng chọn ảnh bìa');
-                    }
-                } else {
-                    const coverText = document.getElementById('cover-url').value.trim();
-                    if (!coverText) throw new Error('Vui lòng nhập URL ảnh bìa');
-                    coverUrl = coverText.split('\n')[0].trim(); // Lấy ảnh đầu tiên
-                }
 
                 // Xử lý các chương
                 const chapters = [];
@@ -331,7 +312,7 @@
                         const files = chapterItems[i].closest('.chapter-item').nextElementSibling.querySelectorAll('.chapter-pages-upload')[0]?.files || [];
                         for (let j = 0; j < files.length; j++) {
                             progress.textContent = `🖼️ Up ảnh Chapter ${i + 1}, trang ${j + 1}...`;
-                            const url = await uploadFile(token, `pages/${Date.now()}_${i + 1}_${j + 1}_${files[j].name}`, files[j]);
+                            const url = await uploadFile(token, `pages/${Date.now()}_${}_${j + 1}_${files[j].name}`, files[j]);
                             pages.push(url);
                         }
                     } else if (urlTab && urlTab.classList.contains('active')) {
@@ -341,43 +322,83 @@
                         }
                     }
 
-                    chapters.push({                        id: i + 1,
+                    chapters.push({
+                        id: i + 1,
                         name: name,
                         pages: pages
                     });
                 }
 
-                // Tạo truyện mới
-                const newComic = {
-                    id: newId, // ✅ Tự tạo ID từ tên
-                    title: title,
-                    desc: desc,
-                    cover: coverUrl,
-                    chapters: chapters
-                };
+                // Tìm truyện theo ID
+                const comic = existing.comics.find(c => c.id === comicId);
 
-                existing.comics.push(newComic);
+                if (comic) {
+                    // ✅ Cập nhật chapter cho truyện đã có
+                    comic.chapters.push(...chapters);
+                    comic.chapters.sort((a, b) => a.id - b.id);
 
-                // ✅ Encode JSON đúng Unicode
-                const jsonString = JSON.stringify(existing, null, 2);
-                const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+                    progress.textContent = '💾 Đang cập nhật data.json...';
+                    const jsonString = JSON.stringify(existing, null, 2);
+                    const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
-                // Cập nhật data.json
-                progress.textContent = '💾 Đang cập nhật data.json...';
-                await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Add comic: ${title}`,
-                        content: encodedContent,
-                        sha: json.sha
-                    })
-                });
+                    await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+: JSON.stringify({
+                            message: `Add chapters to comic: ${comic.title}`,
+                            content: encodedContent,
+                            sha: json.sha
+                        })
+                    });
 
-                showOutput(`✅ Thành công! Đã thêm "${title}" vào data.json.\n→ ID truyện: ${newId}\n→ Tổng số truyện: ${existing.comics.length}`, 'success');
+                    showOutput(`✅ Thành công! Đã thêm ${chapters.length} chapter vào truyện "${comic.title}".\n→ Tổng số chapter: ${comic.chapters.length}`, 'success');
+                } else {
+                    // ✅ Thêm truyện mới
+                    let coverUrl = '';
+                    if (document.getElementById('upload-cover').classList.contains('active')) {
+                        const file = document.getElementById('cover-upload').files[0];
+                        if (file) {
+                            progress.textContent = '📷 Đang upload ảnh bìa...';
+                            coverUrl = await uploadFile(token, `covers/${Date.now()}_${file.name}`, file);
+                        } else {
+                            throw new Error('Vui lòng chọn ảnh bìa');
+                        }
+                    } else {
+                        const coverText = document.getElementById('cover-url').value.trim();
+                        if (!coverText) throw new Error('Vui lòng nhập URL ảnh bìa');
+                        coverUrl = coverText.split('\n')[0].trim(); // Lấy ảnh đầu tiên
+                    }
+
+                    const newComic = {
+                        id: comicId,
+                        title: title,
+                        desc: desc,
+                        cover                        chapters: chapters
+                    };
+
+                    existing.comics.push(newComic);
+
+                    // ✅ Encode JSON đúng Unicode
+                    const jsonString = JSON.stringify(existing, null, 2);
+                    const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+                    // Cập nhật data.json
+                    progress.textContent = '💾 Đang cập nhật data.json...';
+                    await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },                        body: JSON.stringify({
+                            message: `Add comic: ${title}`,
+                            content: encodedContent,
+                            sha: json.sha
+                        })
+                    });
+
+                    showOutput(`✅ Thành công! Đã thêm "${title}" vào data.json.\n→ ID truyện: ${comicId}\n→ Tổng số truyện: ${existing.comics.length}`, 'success');
+                }
             } catch (err) {
                 showOutput(`❌ Lỗi: ${err.message}`, 'error');
             }
@@ -390,12 +411,13 @@
                     const base64 = reader.result.split(',')[1];
                     try {
                         const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/${path}`, {
-                            method: 'PUT',                            headers: {
+                            method: 'PUT',
+                            headers: {
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                messagepath}`,
+                                message: `Upload ${path}`,
                                 content: base64
                             })
                         });
@@ -417,7 +439,6 @@
             output.textContent = text;
             output.style.display = 'block';
             document.getElementById('progress').style.display = 'none';
-        }
-    </script>
+        }    </script>
 </body>
 </html>
