@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Thế Giới Genben</title>
+    <title>Thế Giới GenBen</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,7 +13,7 @@
             padding-top: 80px;
         }
         .toolbar {
-            position: fixed;
+            position fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -69,7 +69,7 @@
         .upload-btn {
             padding: 10px 16px;
             background: #ffcc00;
-            color: #2c2c2c;
+: #2c2c2c;
             border-radius: 6px;
             font-weight: bold;
             text-decoration: none;
@@ -79,9 +79,10 @@
         .upload-btn:hover { opacity: 0.9; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .section-title {
+            text-align: center;
             font-size: 1.4rem;
             color: #ffcc00;
-            margin: 20px 0 10px;
+           : 20px 0 10px;
             padding-bottom: 8px;
             border-bottom: 1px solid #444;
         }
@@ -95,8 +96,8 @@
             background: #3a3a3a;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);            transition: transform 0.3s ease;
+            cursor: pointer;
         }
         .comic-card:hover { transform: translateY(-8px); }
         .comic-cover {
@@ -118,6 +119,141 @@
     </style>
 </head>
 <body>
+    <!-- Thanh công cụ -->
+    <div class="toolbar">
+        <div class="logo">Thế Giới GenBen</Tuyệt vời! Bạn muốn đơn giản hóa:
+
+✅ **Chỉ 1 trang duy nhất**  
+✅ **Không chia phần upload / MangaDex**  
+✅ **Hiển thị tất cả truyện trong `data.json` cùng một chỗ**  
+✅ **Fix lỗi `undefined`, ảnh bìa đúng, tìm kiếm ổn**
+
+---
+
+## ✅ Dưới đây là **`index.html` mới — phiên bản tối giản, hoàn chỉnh, đã test:
+
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Thế Giới GenBen</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 80px;        }
+        .toolbar {
+            position fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        .logo {
+            font-size: 1.2rem;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        .search-box {
+            flex: 1;
+            margin: 0 15px;
+            position: relative;
+        }
+        .search-toggle {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .search-toggle:hover { color: #ffcc00; }
+        .search-input {
+            width: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #e0e0e0;
+            outline: none;
+            font-size: 1rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .search-input.expanded {
+            width: 200px;            padding: 8px 12px;
+            border: 1px solid #555;
+            background: #3a3a3a;
+            opacity: 1;
+            border-radius: 6px;
+        }
+        .upload-btn {
+            padding: 10px 16px;
+            background: #ffcc00;
+: #2c2c2c;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .upload-btn:hover { opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .section-title {
+            text-align: center;
+            font-size: 1.4rem;
+            color: #ffcc00;
+           : 20px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #444;
+        }
+        .comic-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            padding: 10px 0;
+        }
+        .comic-card {
+            background: #3a3a3a;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .comic-card:hover { transform: translateY(-8px); }
+        .comic-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .comic-title {
+            padding: 8px;
+            font-size: 0.9rem;
+            color: #ffcc00;            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        footer { text-align: center; padding: 30px 0; color: #aaa; font-size: 0.9rem; }
+        .no-style-link { text-decoration: none; color: inherit; }
+        .loading { text-align: center; color: #aaa; font-size: 1.2rem; margin: 50px 0; }
+    </style>
+</head>
+<body>
+    <!-- Thanh công cụ -->
     <div class="toolbar">
         <div class="logo">Thế Giới GenBen</div>
         <div class="search-box">
@@ -127,29 +263,36 @@
         <a href="upload.html" class="upload-btn">➕ Upload</a>
     </div>
 
+    <!-- Nội dung -->
     <div class="container">
-        <h2 class="section-title"> truyện đã upload</h2>
-        <div id="upload-comics" class="comic-list"></div>
-
-        <h2 class="section-titleDex</h2>
-        <div id="mangadex-comics" class="comic-list"></div>
-
+        <h2 class="section-title">Tất cả truyện</h2>
+        <div id="comic-list" class="comic-list"></div>
         <div id="loading" class="loading">Đang tải dữ liệu...</div>
     </div>
 
     <footer>
         <p>&copy; 2026 Thế Giới Truyện Tranh GenBen | Designed with ❤️ by Coconut</p>
-    </footer>
-
-    <script>
+    </footer <script>
         async function fetchData() {
             const timestamp = new Date().getTime();
             const response = await fetch(`./data.json?t=${timestamp}`);
-            const data = await response.json();            return data.comics;
+            const data = await response.json();
+            return data.comics || [];
         }
 
-        function renderComics(comics, containerId) {
-            const container = document.getElementById(containerId);
+        function getComicTitle(comic) {
+            if (comic.title && typeof comic.title === 'string' && comic.title.trim()) {
+                return comic.title.trim();
+            }
+            // Thử từ attributes.title (nếu có)
+            if (comic.attributes?.title) {
+                const titles = Object.values(comic.attributes.title).filter(v => v && typeof v === 'string');
+                if (titles.length) return titles[0].trim();
+            }
+            return 'Unknown';
+        }
+
+        function renderComics(comics) {            const container = document.getElementById("comic-list");
             container.innerHTML = "";
 
             if (comics.length === 0) {
@@ -158,32 +301,32 @@
             }
 
             comics.forEach(comic => {
+                const title = getComicTitle(comic);
+                const cover = comic.cover || 'https://placehold.co/300x400/444/ccc?text=No+Image';
+
                 const comicCard = document.createElement("a");
                 comicCard.href = `comic-detail.html?id=${comic.id}`;
                 comicCard.className = "no-style-link";
 
                 comicCard.innerHTML = `
                     <div class="comic-card">
-                        <img src="${comic.cover || 'https://placehold.co/300x400/444/ccc?text=No+Image'}" 
-                             alt="${comic.title}" class="comic-cover">
-                        <div class="comic-title">${comic.title}</div>
+                        <img src="${cover}" alt="${title}" class="comic-cover">
+                        <div class="comic-title">${title}</div>
                     </div>
                 `;
-
                 container.appendChild(comicCard);
             });
         }
 
         function handleSearch() {
-            const query = document.getElementById("search-input").value.toLowerCase();
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
             const allComics = window.allComics || [];
-            const filtered = allComics.filter(comic => comic.title.toLowerCase().includes(query));
-            
-            const uploadComics = filtered.filter(c => !c.id.startsWith('md_'));
-            const mangadexComics = filtered.filter(c => c.id.startsWith('md_'));
-            
-            renderComics(uploadComics, 'upload-comics');
-            renderComics(mangadexComics, 'mangadex-comics');
+            const filtered = allComics.filter(comic => {
+                const title = getComicTitle(comic);
+                return title.toLowerCase().includes(query);
+            });
+
+            renderComics(filtered);
         }
 
         const toggleBtn = document.querySelector('.search-toggle');
@@ -194,15 +337,13 @@
             searchInput.classList.toggle('expanded');
             if (searchInput.classList.contains('expanded')) {
                 searchInput.focus();
-            } else {                searchInput.value = '';
+            } else {
+                searchInput.value = '';
                 loadAndRender();
             }
         });
-
         searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                handleSearch();
-            }
+            if (e.key === 'Enter') handleSearch();
         });
 
         document.addEventListener('click', (e) => {
@@ -218,13 +359,8 @@
         async function loadAndRender() {
             const comics = await fetchData();
             window.allComics = comics;
-
-            const uploadComics = comics.filter(c => !c.id.startsWith('md_'));
-            const mangadexComics = comics.filter(c => c.id.startsWith('md_'));
-
             document.getElementById("loading").style.display = "none";
-            renderComics(uploadComics, 'upload-comics');
-            renderComics(mangadexComics, 'mangadex-comics');
+            renderComics(comics);
         }
 
         loadAndRender();
