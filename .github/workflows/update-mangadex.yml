@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  # ✅ Thêm quyền ghi nội dung
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}  # ✅ Dùng token để checkout
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,7 +58,12 @@ jobs:
               });
 
               const chapters = [];
-              for (const ch of res.data.data) {
+              for (let i = 0; i < res.data.data.length; i++) {
+                const ch = res.data.data[i];
+
+                // ✅ FIX: Dùng index + 1 làm ID duy nhất, không phụ thuộc vào số chapter từ MangaDex
+                const uniqueId = i + 1;
+
                 const imagesRes = await axios.get(`https://api.mangadex.org/at-home/server/${ch.id}`, {
                   headers: { 'User-Agent': 'GenBen-Updater/1.0' }
                 });
@@ -68,8 +73,8 @@ jobs:
                 );
 
                 chapters.push({
-                  id: parseInt(ch.attributes.chapter) || chapters.length + 1,
-                  name: `Chapter ${ch.attributes.chapter || chapters.length + 1}: ${ch.attributes.title || ''}`,
+                  id: uniqueId,  // ✅ ĐẢM BẢO DUY NHẤT
+                  name: `Chapter ${ch.attributes.chapter || uniqueId}: ${ch.attributes.title || ''}`,
                   pages: images
                 });
               }
@@ -91,11 +96,11 @@ jobs:
               },
               headers: { 'User-Agent': 'GenBen-Updater/1.0' }
             });
-
             if (res.data.data.length === 0) {
               console.log('ℹ️ No manga found with tag "Gender Swap".');
               return;
             }
+
             console.log(`✅ Found ${res.data.data.length} manga with tag "Gender Swap".`);
 
             let data;
@@ -140,12 +145,12 @@ jobs:
                 }
               } else {
                 data.comics.push({
-                  id,
-                  title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
+                  id,                  title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
                   desc: m.attributes.description?.vi || m.attributes.description?.en || '',
                   cover: coverUrl,
                   chapters: chapters
-                });                addedManga++;
+                });
+                addedManga++;
                 console.log(`✅ Added new manga: ${m.attributes.title?.vi || m.attributes.title?.en}`);
               }
             }
@@ -165,15 +170,15 @@ jobs:
           node sync.js
 
       - name: Commit & Push
-        env:  # ✅ Thêm biến môi trường
+        env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add data.json
-          if git diff --cached --quiet; then  # ✅ Fix lỗi `git.diff`
+          if git diff --cached --quiet; then
             echo "No changes to commit"
           else
             git commit -m "🤖 Sync full manga data from MangaDex"
-            git push "https://$GH_TOKEN@github.com/${{ github.repository }}.git"  # ✅ Dùng token để push
+            git push "https://$GH_TOKEN@github.com/${{ github.repository }}.git"
           fi
