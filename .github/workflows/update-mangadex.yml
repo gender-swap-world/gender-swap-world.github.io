@@ -60,7 +60,7 @@ jobs:
               const chapters = [];
               for (let i = 0; i < res.data.data.length; i++) {
                 const ch = res.data.data[i];
-                const uniqueId = i + 1; // ✅ Duy nhất theo thứ tự
+                const uniqueId = i + 1;
 
                 const imagesRes = await axios.get(`https://api.mangadex.org/at-home/server/${ch.id}`, {
                   headers: { 'User-Agent': 'GenBen-Updater/1.0' }
@@ -120,7 +120,6 @@ jobs:
               const id = 'md_' + m.id;
 
               if (existingIds.has(id)) {
-                // ✅ Cập nhật chapter nếu truyện đã có
                 const existingComic = data.comics.find(c => c.id === id);
                 const oldChapterIds = new Set(existingComic.chapters.map(c => c.id));
                 const newChapters = await fetchChapters(m.id);
@@ -133,10 +132,9 @@ jobs:
                   console.log(`🔄 Updated ${existingComic.title} with ${trulyNew.length} new chapters`);
                 }
               } else {
-                // ✅ Thêm truyện mới
                 const cover = m.relationships.find(r => r.type === 'cover_art');
                 const coverUrl = cover 
-                  ? `https://uploads.mangadex.org/covers/${m.id}/${cover.attributes.fileName}.256.jpg`
+                  ? `https://uploads.mangadex.org/covers/${m.id}/${cover.attributes.fileName}?raw=true`  // ✅ ĐÃ SỬA
                   : 'https://placehold.co/300x400/444/ccc?text=No+Image';
 
                 const chapters = await fetchChapters(m.id);
@@ -145,9 +143,9 @@ jobs:
                   id,
                   title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
                   desc: m.attributes.description?.vi || m.attributes.description?.en || '',
-                  cover: coverUrl,                  chapters: chapters
-                });
-                addedManga++;
+                  cover: coverUrl,
+                  chapters: chapters
+                });                addedManga++;
                 console.log(`✅ Added new manga: ${m.attributes.title?.vi || m.attributes.title?.en}`);
               }
             }
