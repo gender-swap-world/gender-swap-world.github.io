@@ -96,7 +96,7 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-           0.3s ease;            cursor: pointer;
+            transition: transform 0.3s ease;            cursor: pointer;
         }
         .comic-card:hover { transform: translateY(-8px); }
         .comic-cover {
@@ -118,7 +118,6 @@
     </style>
 </head>
 <body>
-    <!-- Thanh công cụ phía trên -->
     <div class="toolbar">
         <div class="logo">Thế Giới GenBen</div>
         <div class="search-box">
@@ -128,29 +127,25 @@
         <a href="upload.html" class="upload-btn">➕ Upload</a>
     </div>
 
-    <!-- Nội dung chính -->
     <div class="container">
-        <!-- Truyện Upload -->
         <h2 class="section-title"> truyện đã upload</h2>
         <div id="upload-comics" class="comic-list"></div>
 
-        <!-- Truyện từ MangaDex -->
-        <h2 class="section-title"> truyện từ MangaDex</h2>
+        <h2 class="section-titleDex</h2>
         <div id="mangadex-comics" class="comic-list"></div>
 
-        <!-- Loading -->
         <div id="loading" class="loading">Đang tải dữ liệu...</div>
     </div>
 
     <footer>
         <p>&copy; 2026 Thế Giới Truyện Tranh GenBen | Designed with ❤️ by Coconut</p>
     </footer>
+
     <script>
         async function fetchData() {
             const timestamp = new Date().getTime();
             const response = await fetch(`./data.json?t=${timestamp}`);
-            const data = await response.json();
-            return data.comics;
+            const data = await response.json();            return data.comics;
         }
 
         function renderComics(comics, containerId) {
@@ -179,7 +174,6 @@
             });
         }
 
-        // Hàm tìm kiếm
         function handleSearch() {
             const query = document.getElementById("search-input").value.toLowerCase();
             const allComics = window.allComics || [];
@@ -192,28 +186,25 @@
             renderComics(mangadexComics, 'mangadex-comics');
         }
 
-        // Toggle input mở rộng
         const toggleBtn = document.querySelector('.search-toggle');
         const searchInput = document.getElementById('search-input');
+
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             searchInput.classList.toggle('expanded');
             if (searchInput.classList.contains('expanded')) {
                 searchInput.focus();
-            } else {
-                searchInput.value = '';
+            } else {                searchInput.value = '';
                 loadAndRender();
             }
         });
 
-        // Đóng ô tìm kiếm khi nhấn Enter
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 handleSearch();
             }
         });
 
-        // Đóng ô tìm kiếm khi click ngoài
         document.addEventListener('click', (e) => {
             if (!toggleBtn.contains(e.target) && !searchInput.contains(e.target)) {
                 if (searchInput.classList.contains('expanded')) {
