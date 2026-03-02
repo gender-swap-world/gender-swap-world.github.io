@@ -16,49 +16,38 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        .comic-header {
-            display: flex;
-            gap: 20px;
+        .comic-title {
+            font-size: 1.8rem;
+            color: #ffcc00;
             margin-bottom: 20px;
-            align-items: flex-start;
+            text-align: center;
         }
         .comic-cover {
-            width: 200px;
-            height: 280px;
+            width: 100%;
+            max-width: 250px;
+            height: auto;
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .comic-info {
-            flex: 1;
-        }
-        .comic-title {
-            font-size: 1.6rem;
-            color: #ffcc00;
-            margin-bottom: 10px;
+            display: block;
+            margin: 0 auto 20px;
         }
         .comic-desc {
+            padding: 15px;
+            background: #3a3a3a;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.6;
             color: #ccc;
-            line-height: 1.5;
-            margin-bottom: 15px;
+            white-space: pre-wrap;
         }
-        .btn {
-            padding: 10px 20px;
-            background: #ffcc00;
-            color: #2c2c2c;
-            border: none;
-            border-radius: 6px;            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-            text-decoration: none;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        .btn:hover { opacity: 0.9; }
         .chapter-list {
             margin-top: 20px;
         }
-        .chapter-item {
+        .chapter-list h2 {
+            color: #ffcc00;
+            margin-bottom: 12px;
+        }        .chapter-item {
             padding: 12px;
             background: #3a3a3a;
             border-radius: 6px;
@@ -87,16 +76,15 @@
     <div class="container">
         <a href="./" class="back-btn">← Về trang chủ</a>
 
-        <div class="comic-header">
-            <img id="cover" class="comic-cover" src="" alt="Ảnh bìa" />
-            <div class="comic-info">
-                <h1 id="title" class="comic-title"></h1>
-                <div id="desc" class="comic-desc"></div>
-            </div>
-        </div>
+        <h1 id="title" class="comic-title"></h1>
+
+        <img id="cover" class="comic-cover" src="" alt="Ảnh bìa" />
+
+        <div id="desc" class="comic-desc"></div>
 
         <div class="chapter-list">
-            <h2>Danh sách chapter</h2>            <div id="chapters-container"></div>
+            <h2>Danh sách chapter</h2>
+            <div id="chapters-container"></div>
         </div>
     </div>
 
@@ -109,14 +97,13 @@
             const data = await response.json();
             return data.comics;
         }
-
         function findComic() {
             return window.allComics.find(c => c.id === comicId);
         }
 
         function renderComic(comic) {
-            document.getElementById('cover').src = comic.cover;
             document.getElementById('title').textContent = comic.title;
+            document.getElementById('cover').src = comic.cover;
             document.getElementById('desc').textContent = comic.desc;
 
             const container = document.getElementById('chapters-container');
@@ -145,6 +132,7 @@
 
             renderComic(comic);
         }
+
         init();
     </script>
 </body>
