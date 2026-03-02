@@ -1,375 +1,154 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Cập nhật Chapter | Thế Giới GenBen</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #ffcc00;
-            margin-bottom: 24px;
-            font-weight: bold;
-        }
-        .card {
-            background: #2c2c2c;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #444;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #ccc;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 10px 12px;
-            background: #3a3a3a;
-            border: 1px solid #555;
-            border-radius: 6px;
-            color: #e0e0e0;
-            font-size: 1rem;
-        }
-        textarea {            min-height: 80px;
-            resize: vertical;
-        }
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            background: #444;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-        .tab-btn.active {
-            background: #ffcc00;
-            color: #2c2c2c;
-            font-weight: bold;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .comic-preview {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-            padding: 10px;
-            background: #3a3a3a;
-            border-radius: 6px;
-            border: 1px solid #555;
-        }
-        .comic-cover-small {
-            width: 60px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        .comic-info {
-            flex: 1;
-        }
-        .comic-title-preview {
-            font-weight: bold;            color: #ffcc00;
-        }
-        .btn {
-            padding: 10px 16px;
-            background: #ffcc00;
-            color: #2c2c2c;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .btn:hover { opacity: 0.9; }
-        #progress, #output {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-        }
-        #progress {
-            background: #3a3a3a;
-            color: #ffcc00;
-            display: none;
-        }
-        #output {
-            background: #2c2c2c;
-            color: #0f0;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-        .error { color: #f55; }
-        .success { color: #5f5; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Chapter</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+    button:hover { background: #1e7e34; }
+    .hidden { display: none; }
+    .error { color: red; }
+    .success { color: green; }
+    #comicList { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; }
+    .comic-option { padding: 5px; cursor: pointer; }
+    .comic-option:hover { background: #f0f0f0; }
+    .comic-option.selected { background: #007bff; color: white; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 Cập nhật Chapter cho truyện đã có</h1>
-
-        <div class="card">
-            <label for="token">GitHub Token (PAT)</label>
-            <input type="password" id="token" required />
-        </div>
-
-        <div class="card">
-            <label>Tìm & chọn truyện</label>
-            <input type="text" id="search-comic" placeholder="Tìm tên truyện..." />
-            <select id="comic-select">
-                <option value="">--- Đang tải danh sách... ---</option>            </select>
-            <div id="comic-preview" class="comic-preview" style="display:none;">
-                <img id="preview-cover" class="comic-cover-small" src="" alt="Ảnh bìa" />
-                <div class="comic-info">
-                    <div id="preview-title" class="comic-title-preview"></div>
-                    <div id="preview-desc"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <label>Tên chapter mới</label>
-            <input type="text" id="chapter-name" placeholder="Ví dụ: Chapter 5: Cuộc chiến bắt đầu" required />
-
-            <label>Ảnh chapter</label>
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="upload-pages">📁 Tải file</button>
-                <button class="tab-btn" data-tab="url-pages">🔗 Nhập URL</button>
-            </div>
-            <div id="upload-pages" class="tab-content active">
-                <input type="file" multiple id="chapter-pages-upload" accept="image/*" />
-            </div>
-            <div id="url-pages" class="tab-content">
-                <textarea id="chapter-pages-url" placeholder="Dán URL ảnh, mỗi dòng 1 ảnh"></textarea>
-            </div>
-        </div>
-
-        <div class="card">
-            <button class="btn" id="submit-btn">➕ Thêm chapter vào truyện</button>
-        </div>
-
-        <div id="progress"></div>
-        <div id="output"></div>
+  <h1>📖 Update Chapter</h1>
+  <form id="updateForm">
+    <!-- Chọn truyện -->
+    <div class="form-group">
+      <label>Chọn truyện *</label>
+      <input type="text" id="searchComic" placeholder="Gõ tên truyện để tìm..." oninput="searchComic()">
+      <div id="comicList"></div>
+      <input type="hidden" id="selectedComicId">
+      <small id="selectedComicName" style="color: green;"></small>
     </div>
 
-    <script>
-        const REPO_NAME = "gender-swap-world/gender-swap-world.github.io";
+    <!-- Tên Chapter -->
+    <div class="form-group">
+      <label for="chapterName">Tên Chapter *</label>
+      <input type="text" id="chapterName" placeholder="VD: Chapter 1, Chapter 2..." required>
+    </div>
 
-        let allComics = [];
+    <!-- Upload ảnh -->
+    <div class="form-group">
+      <label for="pageFiles">Chọn ảnh trang (có thể chọn nhiều) *</label>
+      <input type="file" id="pageFiles" accept="image/*" multiple required>
+      <small>Hỗ trợ chọn nhiều file cùng lúc</small>
+    </div>
 
-        // Load danh sách truyện
-        async function loadComics() {
-            const select = document.getElementById('comic-select');
-            select.innerHTML = '<option value="">--- Đang tải danh sách... ---</option>';
+    <button type="submit">💾 Lưu Chapter</button>
+    <p id="message"></p>
+  </form>
+  <script src="config.js"></script>
+  <script>
+    let allComics = [];
 
-            try {
-                const response = await fetch('./data.json?t=' + Date.now());
-                const data = await response.json();
-                allComics = data.comics || [];
-                select.innerHTML = '<option value="">--- Chọn truyện ---</option>';
-                allComics.forEach(comic => {
-                    const option = document.createElement('option');
-                    option.value = comic.id;
-                    option.textContent = comic.title;
-                    select.appendChild(option);
-                });
-            } catch (e) {
-                select.innerHTML = '<option value="">--- Lỗi tải dữ liệu ---</option>';
-            }
+    // Load danh sách truyện khi mở trang
+    async function loadComics() {
+      try {
+        const data = await fetchDataJson();
+        allComics = data.comics;
+      } catch (error) {
+        console.error('Không thể load danh sách truyện');
+      }
+    }
+    loadComics();
+
+    // Tìm kiếm truyện
+    function searchComic() {
+      const keyword = document.getElementById('searchComic').value.toLowerCase();
+      const listDiv = document.getElementById('comicList');
+      listDiv.innerHTML = '';
+
+      if (keyword.length < 2) return;
+
+      const filtered = allComics.filter(c => 
+        c.title.toLowerCase().includes(keyword) || c.id.includes(keyword)
+      );
+
+      filtered.forEach(comic => {
+        const div = document.createElement('div');
+        div.className = 'comic-option';
+        div.textContent = `${comic.title} (ID: ${comic.id})`;
+        div.onclick = () => selectComic(comic);
+        listDiv.appendChild(div);
+      });
+    }
+
+    // Chọn truyện
+    function selectComic(comic) {
+      document.getElementById('selectedComicId').value = comic.id;
+      document.getElementById('searchComic').value = comic.title;
+      document.getElementById('selectedComicName').textContent = `Đã chọn: ${comic.title}`;
+      document.getElementById('comicList').innerHTML = '';
+    }
+
+    // Xử lý submit
+    document.getElementById('updateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('message');
+      msg.textContent = '⏳ Đang upload ảnh...';      msg.className = '';
+
+      try {
+        const comicId = document.getElementById('selectedComicId').value;
+        const chapterName = document.getElementById('chapterName').value.trim();
+        const pageFiles = document.getElementById('pageFiles').files;
+
+        if (!comicId) throw new Error('Vui lòng chọn truyện');
+        if (!chapterName) throw new Error('Vui lòng nhập tên chapter');
+        if (pageFiles.length === 0) throw new Error('Vui lòng chọn ít nhất 1 ảnh');
+
+        // Tìm truyện trong data
+        const data = await fetchDataJson();
+        const comicIndex = data.comics.findIndex(c => c.id === comicId);
+        if (comicIndex === -1) throw new Error('Không tìm thấy truyện');
+
+        const comic = data.comics[comicIndex];
+        const chapterId = Date.now().toString();
+        const pageUrls = [];
+
+        // Upload từng ảnh
+        for (let i = 0; i < pageFiles.length; i++) {
+          msg.textContent = `⏳ Đang upload ảnh ${i + 1}/${pageFiles.length}...`;
+          const file = pageFiles[i];
+          const fileName = `${comicId}_${chapterId}_page${i + 1}.jpg`;
+          const url = await uploadToGithub(`pages/${comicId}/${chapterId}`, file, fileName);
+          pageUrls.push(url);
         }
 
-        // Tìm kiếm truyện
-        document.getElementById('search-comic').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const select = document.getElementById('comic-select');
-            select.innerHTML = '<option value="">--- Kết quả tìm kiếm ---</option>';
+        // Tạo chapter object
+        const newChapter = {
+          id: chapterId,
+          name: chapterName,
+          pages: pageUrls,
+          uploadedAt: Date.now()
+        };
 
-            const filtered = allComics.filter(c => c.title.toLowerCase().includes(query));
-            filtered.forEach(comic => {
-                const option = document.createElement('option');
-                option.value = comic.id;
-                option.textContent = comic.title;
-                select.appendChild(option);
-            });
-        });
+        // Thêm vào danh sách chapter
+        comic.chapters.unshift(newChapter);
+        comic.lastUpdated = Date.now();
 
-        // Chọn truyện → hiện preview
-        document.getElementById('comic-select').addEventListener('change', (e) => {
-            const id = e.target.value;
-            if (id) {
-                const comic = allComics.find(c => c.id === id);
-                if (comic) {
-                    document.getElementById('comic-preview').style.display = 'flex';
-                    document.getElementById('preview-cover').src = comic.cover || 'https://placehold.co/60x80/444/ccc?text=No+Image';
-                    document.getElementById('preview-title').textContent = comic.title;
-                    document.getElementById('preview-desc').textContent = comic.desc || 'Không có mô tả';
-                }
-            } else {
-                document.getElementById('comic-preview').style.display = 'none';
-            }
-        });
+        // Lưu lại data.json
+        await updateDataJson(data);
 
-        // Tab switch
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabType = btn.getAttribute('data-tab');
-                const group = tabType.split('-')[0];
-                btn.parentElement.querySelectorAll(`.tab-btn[data-tab^="${group}"]`).forEach(b => b.classList.remove('active'));
-                btn.parentElement.parentElement.querySelectorAll(`.${group}-content`).forEach(c => c.classList.remove('active'));                btn.classList.add('active');
-                document.getElementById(tabType).classList.add('active');
-            });
-        });
+        msg.textContent = `✅ Thành công! Đã thêm ${chapterName} với ${pageUrls.length} trang.`;
+        msg.className = 'success';
+        document.getElementById('updateForm').reset();
+        document.getElementById('selectedComicName').textContent = '';
 
-        // Submit
-        document.getElementById('submit-btn').addEventListener('click', async () => {
-            const token = document.getElementById('token').value.trim();
-            const comicId = document.getElementById('comic-select').value;
-            const chapterName = document.getElementById('chapter-name').value.trim();
-
-            if (!token) {
-                showOutput('❌ Vui lòng nhập GitHub Token', 'error');
-                return;
-            }
-            if (!comicId) {
-                showOutput('❌ Vui lòng chọn truyện', 'error');
-                return;
-            }
-            if (!chapterName) {
-                showOutput('❌ Vui lòng nhập tên chapter', 'error');
-                return;
-            }
-
-            const progress = document.getElementById('progress');
-            const output = document.getElementById('output');
-            progress.style.display = 'block';
-            progress.textContent = '⏳ Đang tải dữ liệu hiện tại...';
-            output.style.display = 'none';
-
-            try {
-                // Fetch current data.json
-                const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`);
-                const json = await res.json();
-                const existing = JSON.parse(atob(json.content));
-
-                const comic = existing.comics.find(c => c.id === comicId);
-                if (!comic) throw new Error('Không tìm thấy truyện');
-
-                // Xử lý ảnh chapter
-                let pages = [];
-
-                if (document.getElementById('upload-pages').classList.contains('active')) {
-                    const files = document.getElementById('chapter-pages-upload').files;
-                    for (let j = 0; j < files.length; j++) {
-                        progress.textContent = `🖼️ Up ảnh trang ${j + 1}...`;
-                        const url = await uploadFile(token, `pages/${Date.now()}_${j + 1}_${files[j].name}`, files[j]);
-                        pages.push(url);
-                    }
-                } else {                    const urls = document.getElementById('chapter-pages-url').value.trim();
-                    if (urls) {
-                        pages = urls.split('\n').map(u => u.trim()).filter(Boolean);
-                    }
-                }
-
-                // Tạo chapter mới
-                const newChapter = {
-                    id: comic.chapters.length + 1,
-                    name: chapterName,
-                    pages: pages
-                };
-
-                // Thêm vào truyện
-                comic.chapters.push(newChapter);
-
-                // Cập nhật data.json
-                progress.textContent = '💾 Đang cập nhật data.json...';
-                const jsonString = JSON.stringify(existing, null, 2);
-                const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
-
-                await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Add chapter to comic: ${comic.title}`,
-                        content: encodedContent,
-                        sha: json.sha
-                    })
-                });
-
-                showOutput(`✅ Thành công! Đã thêm chapter "${chapterName}" vào truyện "${comic.title}".\n→ Tổng số chapter: ${comic.chapters.length}`, 'success');
-            } catch (err) {
-                showOutput(`❌ Lỗi: ${err.message}`, 'error');
-            }
-        });
-
-        async function uploadFile(token, path, file) {
-            const reader = new FileReader();
-            return new Promise((resolve, reject) => {
-                reader.onload = async () => {
-                    const base64 = reader.result.split(',')[1];
-                    try {
-                        const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/${path}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                message: `Upload ${path}`,
-                                content: base64
-                            })
-                        });
-                        if (!res.ok) throw new Error(await res.text());
-                        const data = await res.json();
-                        resolve(`https://raw.githubusercontent.com/${REPO_NAME}/main/${path}`);
-                    } catch (e) {
-                        reject(e);
-                    }
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function showOutput(text, type) {
-            const output = document.getElementById('output');
-            output.className = type;
-            output.textContent = text;
-            output.style.display = 'block';
-            document.getElementById('progress').style.display = 'none';
-        }
-
-        // Load danh sách truyện khi trang tải
-        window.onload = loadComics;
-    </script>
+      } catch (error) {        msg.textContent = `❌ Lỗi: ${error.message}`;
+        msg.className = 'error';
+      }
+    });
+  </script>
 </body>
-                  </html>
+</html>
