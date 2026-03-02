@@ -135,7 +135,7 @@
 </head>
 <body>
     <div class="container">
-        <h1> Mới / Cập nhật Chapter</h1>
+        <h1>📤 Upload Truyện Mới / Cập nhật Chapter</h1>
 
         <div class="card">
             <label for="token">GitHub Token (PAT)</label>
@@ -144,7 +144,7 @@
 
         <div class="card">
             <label>ID truyện (bắt buộc)</label>
-            <input type="text" id="comic-id" required dụ: how_the_little_brother_who_turned_into_a_girl" />
+            <input type="text" id="comic-id" required placeholder="Ví dụ: how_the_little_brother_who_turned_into_a_girl" />
             <label>Tên truyện</label>
             <input type="text" id="title" required />
 
@@ -248,7 +248,7 @@
             container.appendChild(pagesContainer);
 
             // Setup tab
-            pagesContainer.querySelectorAll('.tab-btn').forEach(btn => {
+            pagesContainer.querySelectorAllforEach(btn => {
                 btn.addEventListener('click', () => {
                     const tabType = btn.getAttribute('data-tab');
                     btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -286,14 +286,13 @@
             }
 
             const progress = document.getElementById('progress');
-            const output = document.getElementById('output');
-            progress.style.display = 'block';
+            const output = document.getElementById('output.display = 'block';
             progress.textContent = '⏳ Đang tải dữ liệu hiện tại...';
             output.style.display = 'none';
 
             try {
-                // Fetch current data.json                const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`);
-                const json = await res.json();
+                // Fetch current data.json
+                const res = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`);                const json = await res.json();
                 const existing = JSON.parse(atob(json.content));
 
                 // Xử lý các chương
@@ -312,7 +311,7 @@
                         const files = chapterItems[i].closest('.chapter-item').nextElementSibling.querySelectorAll('.chapter-pages-upload')[0]?.files || [];
                         for (let j = 0; j < files.length; j++) {
                             progress.textContent = `🖼️ Up ảnh Chapter ${i + 1}, trang ${j + 1}...`;
-                            const url = await uploadFile(token, `pages/${Date.now()}_${}_${j + 1}_${files[j].name}`, files[j]);
+                            const url = await uploadFile(token, `pages/${Date.now()}_${i + 1}_${j + 1}_${files[j].name}`, files[j]);
                             pages.push(url);
                         }
                     } else if (urlTab && urlTab.classList.contains('active')) {
@@ -341,11 +340,12 @@
                     const jsonString = JSON.stringify(existing, null, 2);
                     const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
-                    await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {                        method: 'PUT',
-                        headers: {
+                    await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
+                        method: 'PUT',                        headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
-: JSON.stringify({
+                        },
+                        body: JSON.stringify({
                             message: `Add chapters to comic: ${comic.title}`,
                             content: encodedContent,
                             sha: json.sha
@@ -374,7 +374,8 @@
                         id: comicId,
                         title: title,
                         desc: desc,
-                        cover                        chapters: chapters
+                        cover: coverUrl,
+                        chapters: chapters
                     };
 
                     existing.comics.push(newComic);
@@ -389,8 +390,8 @@
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },                        body: JSON.stringify({
+                            'Content-Type': 'application/json'                        },
+                        body: JSON.stringify({
                             message: `Add comic: ${title}`,
                             content: encodedContent,
                             sha: json.sha
@@ -438,7 +439,7 @@
             output.className = type;
             output.textContent = text;
             output.style.display = 'block';
-            document.getElementById('progress').style.display = 'none';
-        }    </script>
+            document.getElementById('progress').style.display = 'none';        }
+    </script>
 </body>
 </html>
