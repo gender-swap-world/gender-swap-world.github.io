@@ -209,7 +209,7 @@
             chapterItem.className = 'chapter-item';
             chapterItem.innerHTML = `
                 <div class="chapter-header">
-                    <div class="chapter-title">Chapter ${chapterIndex + 1}</div>
+                    <div class="chapter-title">Chapter ${chapterIndex}</div>
                     <button class="btn btn-outline remove-chapter">🗑️</button>
                 </div>
                 <input type="text" class="chapter-name" placeholder="Tên chương..." />
@@ -286,7 +286,7 @@
 
                     let pages = [];
 
-                    const uploadTab = chapterItems[i].querySelector-tab^="upload-pages"]');
+                    const uploadTab = chapterItems[i].querySelector('.tab-btn[data-tab^="upload-pages"]');
                     const urlTab = chapterItems[i].querySelector('.tab-btn[data-tab^="url-pages"]');
 
                     if (uploadTab && uploadTab.classList.contains('active')) {
