@@ -24,13 +24,30 @@ jobs:
           const fs = require('fs').promises;
           const axios = require('axios');
 
-          const TAG_ID = 'df4de92c-07ea-4af0-b794-2f7d9ec2acdb';
+          const TAG_ID = 'df4de92c-07ea-4af0-b794-2f7d9ec2acdb'; // Gender Swap
 
+          // Hàm kiểm tra manga có chapter tiếng Việt không
+          async function hasVietnameseChapters(mangaId) {
+            try {
+              const res = await axios.get('https://api.mangadex.org/chapter', {
+                params: {
+                  manga: mangaId,
+                  translatedLanguage: ['vi'],
+                  limit: 1
+                },
+                headers: { 'User-Agent': 'GenBen-Updater/1.0' }
+              });
+              return res.data.data.length > 0;
+            } catch (e) {
+              return false;
+            }
+          }
+
+          // Hàm lấy toàn bộ chapter tiếng Việt
           async function fetchChapters(mangaId) {
             try {
               const res = await axios.get('https://api.mangadex.org/manga/' + mangaId + '/feed', {
-                params: {
-                  translatedLanguage: ['vi'],
+                params: {                  translatedLanguage: ['vi'],
                   limit: 500,
                   order: { chapter: 'asc' }
                 },
@@ -39,6 +56,7 @@ jobs:
 
               const chapters = [];
               for (const ch of res.data.data) {
+                // Lấy ảnh từ AtHome Server
                 const imagesRes = await axios.get(`https://api.mangadex.org/at-home/server/${ch.id}`, {
                   headers: { 'User-Agent': 'GenBen-Updater/1.0' }
                 });
@@ -47,7 +65,8 @@ jobs:
                   img => imagesRes.data.baseUrl + '/data/' + imagesRes.data.chapter.hash + '/' + img
                 );
 
-                chapters.push({                  id: parseInt(ch.attributes.chapter) || chapters.length + 1,
+                chapters.push({
+                  id: parseInt(ch.attributes.chapter) || chapters.length + 1,
                   name: `Chapter ${ch.attributes.chapter || chapters.length + 1}: ${ch.attributes.title || ''}`,
                   pages: images
                 });
@@ -61,10 +80,10 @@ jobs:
           async function main() {
             console.log('🚀 Starting sync...');
 
+            // Bước 1: Lấy danh sách manga theo tag (không lọc ngôn ngữ)
             const res = await axios.get('https://api.mangadex.org/manga', {
               params: {
-                includedTags: [TAG_ID],
-                availableTranslatedLanguage: ['vi'],
+                includedTags: [TAG_ID], // Gender Swap
                 limit: 100,
                 includes: ['cover_art'],
                 order: { createdAt: 'desc' }
@@ -73,10 +92,12 @@ jobs:
             });
 
             if (res.data.data.length === 0) {
-              console.log('ℹ️ No manga found matching criteria.');
+              console.log('ℹ️ No manga found with tag "Gender Swap".');
               return;
             }
 
+            console.log(`✅ Found ${res.data.data.length} manga with tag "Gender Swap".`);
+            // Đọc data.json hiện tại
             let data;
             try {
               data = JSON.parse(await fs.readFile('data.json', 'utf8'));
@@ -88,7 +109,18 @@ jobs:
             let addedManga = 0;
             let updatedManga = 0;
 
+            // Bước 2: Duyệt từng manga, kiểm tra có chapter tiếng Việt không
             for (const m of res.data.data) {
+              console.log(`\n📖 Checking: ${m.attributes.title?.en || 'Unknown'}`);
+
+              // Kiểm tra có chapter tiếng Việt không
+              if (!(await hasVietnameseChapters(m.id))) {
+                console.log(`❌ No Vietnamese chapters for ${m.attributes.title?.en || m.id}`);
+                continue;
+              }
+
+              console.log(`✅ Has Vietnamese chapters, fetching details...`);
+
               const id = 'md_' + m.id;
               const cover = m.relationships.find(r => r.type === 'cover_art');
               const coverUrl = cover 
@@ -96,30 +128,41 @@ jobs:
                 : 'https://placehold.co/300x400/444/ccc?text=No+Image';
 
               const chapters = await fetchChapters(m.id);
+
               if (existingMap.has(id)) {
+                // Truyện đã tồn tại → cập nhật chapter mới
                 const existingComic = existingMap.get(id);
                 const existingChapterIds = new Set(existingComic.chapters.map(c => c.id));
-                const newChapters = chapters.filter(ch => !existingChapterIds.has(ch.id));
 
+                const newChapters = chapters.filter(ch => !existingChapterIds.has(ch.id));
                 if (newChapters.length > 0) {
                   existingComic.chapters.push(...newChapters);
                   existingComic.chapters.sort((a, b) => a.id - b.id);
                   updatedManga++;
+                  console.log(`🔄 Updated ${existingComic.title} with ${newChapters.length} new chapters`);
+                } else {
+                  console.log(`✅ No new chapters for ${existingComic.title}`);
                 }
               } else {
-                data.comics.push({
-                  id,
+                // Truyện mới → thêm vào
+                data.comics.push({                  id,
                   title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
                   desc: m.attributes.description?.vi || m.attributes.description?.en || '',
                   cover: coverUrl,
                   chapters: chapters
                 });
                 addedManga++;
+                console.log(`✅ Added new manga: ${m.attributes.title?.vi || m.attributes.title?.en}`);
               }
             }
 
-            await fs.writeFile('data.json', JSON.stringify(data, null, 2));
-            console.log(`🎉 Added: ${addedManga}, Updated: ${updatedManga}`);
+            // Bước 3: Ghi lại data.json
+            if (addedManga > 0 || updatedManga > 0) {
+              await fs.writeFile('data.json', JSON.stringify(data, null, 2));
+              console.log(`\n🎉 Summary: Added ${addedManga}, Updated ${updatedManga}`);
+            } else {
+              console.log('\nℹ️ No changes to write.');
+            }
           }
 
           main().catch(console.error);
@@ -134,7 +177,7 @@ jobs:
           git config user.email "actions@github.com"
           git add data.json
           if git diff --quiet --staged; then
-            echo "No changes"
+            echo "No changes to commit"
           else
             git commit -m "🤖 Sync full manga data from MangaDex"
             git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
