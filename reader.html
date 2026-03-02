@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đang đọc truyện</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .top-left { position: absolute; top: 20px; left: 20px; }
+        .back-btn { padding: 10px 20px; background: #ffcc00; color: #2c2c2c; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 1rem; }
+        .back-btn:hover { opacity: 0.9; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; background: #ffcc00; color: #2c2c2c; border: none; border-radius: 6px; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { background: #555; cursor: not-allowed; opacity: 0.5; }
+        .image-container img { width: 100%; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
+        .loading { text-align: center; color: #aaa; font-size: 1.2rem; margin: 50px 0; }
+    </style>
+</head>
+<body>
+    <a href="./index.html" class="back-btn">← Trang chủ</a>
+
+    <div class="container">
+        <div class="nav-buttons">
+            <button class="btn" id="prev-btn">← Chap trước</button>
+            <button class="btn" id="next-btn">Chap sau →</button>
+        </div>
+
+        <div id="loading" class="loading">Đang tải dữ liệu...</div>
+        <div id="images-container" class="image-container"></div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            const response = await fetch('./data.json');
+            const data = await response.json();
+            return data.comics;
+        }
+
+        function getParameterByName(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        async function init() {
+            const comics = await fetchData();
+            const comicId = getParameterByName('comic');
+            const chapterNum = parseInt(getParameterByName('chapter'));
+
+            const comic = comics.find(c => c.id === comicId);
+            if (!comic) {
+                document.getElementById("loading").textContent = "Không tìm thấy truyện!";
+                return;
+            }
+
+            const chapter = comic.chapters.find(c => c.id === chapterNum);
+            if (!chapter) {
+                document.getElementById("loading").textContent = "Không tìm thấy chapter!";
+                return;
+            }
+
+            document.getElementById("loading").classList.add("hidden");
+
+            const container = document.getElementById("images-container");
+            chapter.pages.forEach(page => {
+                const img = document.createElement("img");
+                img.src = page.startsWith('http') ? page : page; // Hỗ trợ cả URL và local path
+                img.alt = `Trang ${page}`;
+                container.appendChild(img);
+            });
+
+            const chapterIds = comic.chapters.map(c => c.id);
+            const currentIndex = chapterIds.indexOf(chapterNum);
+
+            document.getElementById("prev-btn").disabled = currentIndex <= 0;
+            document.getElementById("next-btn").disabled = currentIndex >= chapterIds.length - 1;
+
+            document.getElementById("prev-btn").onclick = () => {
+                if (currentIndex > 0) {
+                    const prevChapterId = chapterIds[currentIndex - 1];
+                    window.location.href = `reader.html?comic=${comicId}&chapter=${prevChapterId}`;
+                }
+            };
+
+            document.getElementById("next-btn").onclick = () => {
+                if (currentIndex < chapterIds.length - 1) {
+                    const nextChapterId = chapterIds[currentIndex + 1];
+                    window.location.href = `reader.html?comic=${comicId}&chapter=${nextChapterId}`;
+                }
+            };
+        }
+
+        init();
+    </script>
+
+    <style>.hidden { display: none; }</style>
+</body>
+</html>
