@@ -29,9 +29,6 @@
             margin-bottom: 20px;
             border: 1px solid #444;
         }
-        .form-group {
-            margin-bottom: 16px;
-        }
         label {
             display: block;
             margin-bottom: 6px;
@@ -47,10 +44,10 @@
             color: #e0e0e0;
             font-size: 1rem;
         }
-        textarea {            min-height: 80px;
+        textarea {
+            min-height: 80px;
             resize: vertical;
-        }
-        .tabs {
+        }        .tabs {
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
@@ -71,18 +68,10 @@
             color: #2c2c2c;
             font-weight: bold;
         }
-        .tab-btn:hover:not(.active) {
-            background: #555;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .chapter-list {
-            margin-top: 16px;
-        }
+        .tab-btn:hover:not(.active) { background: #555; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
         .chapter-item {
             background: #3a3a3a;
             padding: 12px;
@@ -96,43 +85,32 @@
             align-items: center;
             margin-bottom: 10px;
             flex-wrap: wrap;
-            gap: 8px;        }
+            gap: 8px;
+        }
         .chapter-title {
             font-weight: 500;
             color: #ffcc00;
-        }
-        .chapter-number {
-            font-size: 0.85rem;
-            color: #888;
         }
         .btn {
             padding: 8px 16px;
             background: #ffcc00;
             color: #2c2c2c;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: 6px;            font-weight: bold;
             cursor: pointer;
             font-size: 0.9rem;
             transition: opacity 0.2s;
         }
         .btn:hover { opacity: 0.9; }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-outline {
             background: transparent;
             border: 1px solid #555;
             color: #e0e0e0;
         }
-        .btn-outline:hover {
-            background: #555;
-        }
-        .btn-danger {
-            background: #f55;
-            color: #fff;
-        }
+        .btn-outline:hover { background: #555; }
+        .btn-danger { background: #f55; color: #fff; }
+        
         #progress, #output {
             margin-top: 16px;
             padding: 12px;
@@ -145,7 +123,8 @@
             color: #ffcc00;
             display: none;
             border-left: 4px solid #ffcc00;
-        }        #output {
+        }
+        #output {
             background: #2c2c2c;
             color: #0f0;
             white-space: pre-wrap;
@@ -154,32 +133,21 @@
             display: none;
             border-left: 4px solid #5f5;
         }
-        .error {
-            color: #f55 !important;
-            border-left-color: #f55 !important;
-        }
-        .success {
-            color: #5f5 !important;
-            border-left-color: #5f5 !important;
-        }
-        .info {
-            color: #8af !important;
-            border-left-color: #8af !important;
-        }
-        .hidden {
-            display: none !important;
-        }
+        .error { color: #f55 !important; border-left-color: #f55 !important; }
+        .success { color: #5f5 !important; border-left-color: #5f5 !important; }
+        .info { color: #8af !important; border-left-color: #8af !important; }
         .file-info {
             font-size: 0.85rem;
             color: #888;
             margin-top: 4px;
         }
-        @media (max-width: 600px) {
-            .chapter-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
+        .mode-indicator {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;        }
+        .mode-upload { background: #ffcc00; color: #222; }
+        .mode-url { background: #5f5; color: #222; }
     </style>
 </head>
 <body>
@@ -189,12 +157,13 @@
         <div class="card">
             <label for="token">GitHub Token (PAT) <span style="color:#f55">*</span></label>
             <input type="password" id="token" required placeholder="ghp_xxxxxxxxxxxx" />
-            <div class="file-info">Tạo token tại: GitHub → Settings → Developer settings → Personal access tokens</div>
+            <div class="file-info">Tạo token tại: GitHub → Settings → Developer settings → Personal access tokens (quyền: repo)</div>
         </div>
 
         <div class="card">
             <label>ID truyện (bắt buộc) <span style="color:#f55">*</span></label>
-            <input type="text" id="comic-id" required placeholder="VD: how_the_little_brother_who_turned_into_a_girl" />            <div class="file-info">ID không dấu, viết thường, cách nhau bằng dấu gạch dưới</div>
+            <input type="text" id="comic-id" required placeholder="VD: how_the_little_brother_who_turned_into_a_girl" />
+            <div class="file-info">ID không dấu, viết thường, cách nhau bằng dấu gạch dưới</div>
 
             <label>Tên truyện <span style="color:#f55">*</span></label>
             <input type="text" id="title" required placeholder="Nhập tên truyện..." />
@@ -204,15 +173,15 @@
 
             <label>Ảnh bìa</label>
             <div class="tabs">
-                <button class="tab-btn active" data-tab="upload-cover">📁 Tải file</button>
-                <button class="tab-btn" data-tab="url-cover">🔗 Nhập URL</button>
+                <button class="tab-btn active" data-tab="cover" data-mode="upload">📁 Tải file</button>
+                <button class="tab-btn" data-tab="cover" data-mode="url">🔗 Nhập URL</button>
             </div>
-            <div id="upload-cover" class="tab-content active">
-                <input type="file" id="cover-upload" accept="image/*" />
+            <div id="cover-upload" class="tab-content active">
+                <input type="file" id="cover-upload-input" accept="image/*" />
                 <div class="file-info" id="cover-file-info"></div>
             </div>
-            <div id="url-cover" class="tab-content">
-                <textarea id="cover-url" placeholder="Dán URL ảnh bìa (mỗi dòng 1 URL)"></textarea>
+            <div id="cover-url" class="tab-content">
+                <textarea id="cover-url-input" placeholder="Dán URL ảnh bìa (mỗi dòng 1 URL)"></textarea>
                 <div class="file-info">Chỉ sử dụng URL ảnh trực tiếp (.jpg, .png, .webp...)</div>
             </div>
         </div>
@@ -222,13 +191,10 @@
                 <label>Chương truyện</label>
                 <button class="btn" id="add-chapter">+ Thêm chương</button>
             </div>
-            <div class="file-info">Nhập ít nhất 1 chương để upload. Có thể thêm nhiều chương cùng lúc.</div>
+            <div class="file-info">Nhập ít nhất 1 chương. Chọn chế độ "Tải file" hoặc "Nhập URL" cho từng chapter.</div>
 
-            <div id="chapters-container">
-                <!-- Chapter sẽ được thêm vào đây -->
-            </div>
+            <div id="chapters-container"></div>
         </div>
-
         <div class="card">
             <button class="btn" id="submit-btn" style="width:100%; padding:12px; font-size:1.1rem;">📤 Upload Truyện & Ảnh Lên GitHub</button>
         </div>
@@ -241,63 +207,65 @@
         const REPO_NAME = "gender-swap-world/gender-swap-world.github.io";
         const REPO_BRANCH = "main";
 
-        // ========== Utility Functions ==========
+        // ========== UTF-8 Base64 Helpers ==========
         function utf8ToBase64(str) {
-            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));        }
-
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
+        }
         function base64ToUtf8(base64) {
             return decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
         }
 
+        // ========== UI Helpers ==========
         function showProgress(text) {
-            const progress = document.getElementById('progress');
-            progress.textContent = text;
-            progress.style.display = 'block';
-            progress.className = '';
+            const el = document.getElementById('progress');
+            el.textContent = text;
+            el.style.display = 'block';
+            el.className = '';
         }
-
         function showOutput(text, type = 'info') {
-            const output = document.getElementById('output');
-            output.textContent = text;
-            output.className = type;
-            output.style.display = 'block';
+            const el = document.getElementById('output');
+            el.textContent = text;
+            el.className = type;
+            el.style.display = 'block';
             document.getElementById('progress').style.display = 'none';
             console.log(`[${type.toUpperCase()}] ${text}`);
         }
 
-        function hideOutput() {
-            document.getElementById('output').style.display = 'none';
-        }
-
-        // ========== Tab Switching ==========
-        function setupTabSwitching(container) {
+        // ========== Tab Switching (Generic) ==========
+        function initTabs(container = document) {
             container.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const tabType = btn.getAttribute('data-tab');
-                    const prefix = tabType.split('-').slice(0, -1).join('-');
+                    const tabGroup = btn.dataset.tab;
+                    const mode = btn.dataset.mode;
                     
                     // Deactivate all buttons in this group
-                    container.querySelectorAll(`.tab-btn[data-tab^="${prefix}"]`).forEach(b => b.classList.remove('active'));
+                    container.querySelectorAll(`.tab-btn[data-tab="${tabGroup}"]`).forEach(b => b.classList.remove('active'));
                     // Hide all contents in this group
-                    container.querySelectorAll(`[id^="${prefix}"]`).forEach(c => {
+                    container.querySelectorAll(`[id^="${tabGroup}-"]`).forEach(c => {
                         if (c.classList.contains('tab-content')) c.classList.remove('active');
-                    });
-                    
+                    });                    
                     // Activate selected
                     btn.classList.add('active');
-                    const target = document.getElementById(tabType);
-                    if (target) target.classList.add('active');
+                    document.getElementById(`${tabGroup}-${mode}`).classList.add('active');
+                    
+                    // Update visual indicator if exists
+                    const indicator = btn.closest('.chapter-item')?.querySelector('.mode-indicator');
+                    if (indicator) {
+                        indicator.textContent = mode === 'upload' ? '📁 File Mode' : '🔗 URL Mode';
+                        indicator.className = `mode-indicator mode-${mode}`;
+                    }
                 });
             });
         }
 
-        // Cover tabs
-        setupTabSwitching(document);
-        // Show file name when cover file selected
-        document.getElementById('cover-upload').addEventListener('change', function(e) {
+        // Init global tabs (cover)
+        initTabs(document);
+
+        // Cover file info display
+        document.getElementById('cover-upload-input').addEventListener('change', function() {
             const info = document.getElementById('cover-file-info');
             if (this.files[0]) {
-                info.textContent = `📄 ${this.files[0].name} (${(this.files[0].size / 1024).toFixed(1)} KB)`;
+                info.textContent = `📄 ${this.files[0].name} (${(this.files[0].size/1024).toFixed(1)} KB)`;
             } else {
                 info.textContent = '';
             }
@@ -310,12 +278,12 @@
             const chapterId = `chapter-${index}`;
             const div = document.createElement('div');
             div.className = 'chapter-item';
-            div.dataset.chapterIndex = index;
+            div.dataset.chapterId = chapterId;
             div.innerHTML = `
                 <div class="chapter-header">
                     <div>
-                        <span class="chapter-title">Chapter <span class="chapter-num-display">${index}</span></span>
-                        <span class="chapter-number" id="chapter-id-${index}"></span>
+                        <span class="chapter-title">Chapter <span class="chapter-num">${index}</span></span>
+                        <span class="mode-indicator mode-upload">📁 File Mode</span>
                     </div>
                     <button class="btn btn-outline btn-danger remove-chapter">🗑️ Xóa</button>
                 </div>
@@ -323,17 +291,20 @@
                 <input type="text" class="chapter-name" placeholder="Tên chương (VD: Chương 1: Khởi đầu...)" required />
                 
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="upload-pages-${chapterId}">📁 Tải file ảnh</button>
-                    <button class="tab-btn" data-tab="url-pages-${chapterId}">🔗 Nhập URL ảnh</button>
-                </div>
+                    <button class="tab-btn active" data-tab="pages-${chapterId}" data-mode="upload">📁 Tải file ảnh</button>
+                    <button class="tab-btn" data-tab="pages-${chapterId}" data-mode="url">🔗 Nhập URL ảnh</button>                </div>
                 
-                <div id="upload-pages-${chapterId}" class="tab-content active">
+                <!-- FILE UPLOAD MODE -->
+                <div id="pages-${chapterId}-upload" class="tab-content active">
                     <input type="file" class="chapter-pages-upload" accept="image/*" multiple />
                     <div class="file-info chapter-file-info" id="file-info-${chapterId}"></div>
+                    <div class="file-info" style="color:#8af">✓ Ảnh sẽ được upload lên GitHub, URL raw sẽ lưu vào data.json</div>
                 </div>
-                <div id="url-pages-${chapterId}" class="tab-content">
-                    <textarea class="chapter-pages-url" placeholder="Dán URL ảnh (mỗi dòng 1 URL)&#10;VD:&#10;https://example.com/img1.jpg&#10;https://example.com/img2.png"></textarea>
-                    <div class="file-info">Chỉ dùng URL ảnh trực tiếp, đảm bảo link không chứa ký tự đặc biệt</div>
+                
+                <!-- URL MODE -->
+                <div id="pages-${chapterId}-url" class="tab-content">
+                    <textarea class="chapter-pages-url" placeholder="Dán URL ảnh trực tiếp (mỗi dòng 1 URL)&#10;VD:&#10;https://img.example.com/ch1/01.jpg&#10;https://cdn.example.com/img2.png"></textarea>
+                    <div class="file-info" style="color:#5f5">✓ URL sẽ được lưu TRỰC TIẾP vào data.json (không upload lên GitHub)</div>
                 </div>
             `;
             return div;
@@ -341,24 +312,25 @@
 
         document.getElementById('add-chapter').addEventListener('click', () => {
             const container = document.getElementById('chapters-container');
-            const chapterEl = createChapterElement(chapterCounter);            container.appendChild(chapterEl);
+            const chapterEl = createChapterElement(chapterCounter);
+            container.appendChild(chapterEl);
             
-            // Setup tab switching for this chapter
-            setupTabSwitching(chapterEl);
+            // Init tab switching for this chapter
+            initTabs(chapterEl);
             
-            // Setup file info display
+            // File info display for upload mode
             const fileInput = chapterEl.querySelector('.chapter-pages-upload');
             const fileInfo = chapterEl.querySelector('.chapter-file-info');
             fileInput.addEventListener('change', function() {
                 if (this.files.length > 0) {
-                    const sizes = Array.from(this.files).reduce((acc, f) => acc + f.size, 0);
-                    fileInfo.textContent = `📁 ${this.files.length} ảnh • ${(sizes / 1024).toFixed(1)} KB`;
+                    const totalSize = Array.from(this.files).reduce((acc, f) => acc + f.size, 0);
+                    fileInfo.textContent = `📁 ${this.files.length} ảnh • ${(totalSize/1024).toFixed(1)} KB`;
                 } else {
                     fileInfo.textContent = '';
                 }
             });
             
-            // Setup remove button
+            // Remove button
             chapterEl.querySelector('.remove-chapter').addEventListener('click', () => {
                 if (confirm('Xóa chapter này?')) {
                     chapterEl.remove();
@@ -369,17 +341,14 @@
             chapterCounter++;
             renumberChapters();
         });
-
         function renumberChapters() {
-            const items = document.querySelectorAll('.chapter-item');
-            items.forEach((item, idx) => {
-                const num = idx + 1;
-                item.querySelector('.chapter-num-display').textContent = num;
-                item.dataset.chapterIndex = num;
+            document.querySelectorAll('.chapter-item').forEach((item, idx) => {
+                item.querySelector('.chapter-num').textContent = idx + 1;
+                item.dataset.chapterId = `chapter-${idx + 1}`;
             });
         }
 
-        // ========== File Upload ==========
+        // ========== GitHub File Upload ==========
         async function uploadFileToGitHub(token, path, file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -390,7 +359,8 @@
                         
                         const response = await fetch(apiUrl, {
                             method: 'PUT',
-                            headers: {                                'Authorization': `Bearer ${token}`,
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
@@ -402,13 +372,11 @@
                         
                         if (!response.ok) {
                             const errText = await response.text();
-                            throw new Error(`GitHub API error (${response.status}): ${errText}`);
+                            throw new Error(`GitHub API (${response.status}): ${errText}`);
                         }
                         
                         const data = await response.json();
-                        // Return raw.githubusercontent.com URL for direct image access
-                        const rawUrl = `https://raw.githubusercontent.com/${REPO_NAME}/${REPO_BRANCH}/${path}`;
-                        resolve(rawUrl);
+                        resolve(`https://raw.githubusercontent.com/${REPO_NAME}/${REPO_BRANCH}/${path}`);
                     } catch (err) {
                         reject(err);
                     }
@@ -418,7 +386,12 @@
             });
         }
 
-        // ========== Main Submit Logic ==========
+        // ========== Get Active Mode for a Chapter ==========
+        function getChapterMode(chapterEl) {
+            const uploadBtn = chapterEl.querySelector('.tab-btn[data-mode="upload"]');
+            return uploadBtn?.classList.contains('active') ? 'upload' : 'url';
+        }
+        // ========== Main Submit ==========
         document.getElementById('submit-btn').addEventListener('click', async () => {
             const token = document.getElementById('token').value.trim();
             const comicId = document.getElementById('comic-id').value.trim();
@@ -436,30 +409,26 @@
                 return;
             }
 
-            // Disable button during upload
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            hideOutput();
+            document.getElementById('output').style.display = 'none';
+
             try {
                 showProgress('⏳ Đang tải data.json từ GitHub...');
                 
-                // Fetch current data.json
+                // Fetch data.json
                 const apiUrl = `https://api.github.com/repos/${REPO_NAME}/contents/data.json?ref=${REPO_BRANCH}`;
-                const res = await fetch(apiUrl, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` }});
                 
                 if (!res.ok) {
                     if (res.status === 404) {
-                        throw new Error('File data.json không tồn tại trong repo. Vui lòng tạo file data.json với cấu trúc: { "comics": [] }');
+                        throw new Error('File data.json không tồn tại. Vui lòng tạo file với nội dung: {"comics":[]}');
                     }
-                    throw new Error(`Không thể tải data.json: ${res.status} ${res.statusText}`);
+                    throw new Error(`Không thể tải data.json: ${res.status}`);
                 }
                 
                 const fileInfo = await res.json();
                 const existingData = JSON.parse(base64ToUtf8(fileInfo.content));
-                
-                // Ensure comics array exists
                 if (!existingData.comics || !Array.isArray(existingData.comics)) {
                     existingData.comics = [];
                 }
@@ -468,36 +437,31 @@
                 showProgress('📋 Đang xử lý chapters...');
                 const newChapters = [];
                 
-                // Find max existing chapter ID for this comic (if updating)
+                // Calculate next chapter ID
                 const existingComic = existingData.comics.find(c => c.id === comicId);
-                let nextChapterId = 1;
-                if (existingComic && existingComic.chapters?.length > 0) {
-                    const maxId = Math.max(...existingComic.chapters.map(c => c.id || 0));
-                    nextChapterId = maxId + 1;
+                let nextChapterId = 1;                if (existingComic?.chapters?.length > 0) {
+                    nextChapterId = Math.max(...existingComic.chapters.map(c => c.id || 0)) + 1;
                 }
 
                 for (let i = 0; i < chapterItems.length; i++) {
                     const item = chapterItems[i];
                     const chapterName = item.querySelector('.chapter-name')?.value.trim();
-                    
                     if (!chapterName) {
-                        console.warn(`⚠️ Chapter ${i+1} không có tên, bỏ qua`);
-                        continue;
+                        showOutput(`❌ Chapter ${i+1}: Vui lòng nhập tên chapter`, 'error');
+                        submitBtn.disabled = false;
+                        return;
                     }
 
+                    const mode = getChapterMode(item);
                     let pages = [];
-                    
-                    // Determine active tab for this chapter
-                    const uploadBtn = item.querySelector('.tab-btn[data-tab^="upload-pages-"]');                    const urlBtn = item.querySelector('.tab-btn[data-tab^="url-pages-"]');
-                    const isUploadMode = uploadBtn?.classList.contains('active');
 
-                    if (isUploadMode) {
-                        // File upload mode
+                    if (mode === 'upload') {
+                        // 📁 FILE UPLOAD MODE: Upload to GitHub first
                         const fileInput = item.querySelector('.chapter-pages-upload');
                         const files = fileInput?.files || [];
                         
                         if (files.length === 0) {
-                            showOutput(`❌ Chapter "${chapterName}": Vui lòng chọn ít nhất 1 ảnh`, 'error');
+                            showOutput(`❌ Chapter "${chapterName}": Vui lòng chọn ít nhất 1 ảnh ở chế độ "Tải file"`, 'error');
                             submitBtn.disabled = false;
                             return;
                         }
@@ -506,38 +470,41 @@
                         
                         for (let j = 0; j < files.length; j++) {
                             const file = files[j];
-                            const timestamp = Date.now();
                             const safeName = file.name.replace(/[^a-z0-9._-]/gi, '_');
-                            const path = `pages/${comicId}/ch${nextChapterId + i}/${timestamp}_${j}_${safeName}`;
+                            const path = `pages/${comicId}/ch${nextChapterId + i}/${Date.now()}_${j}_${safeName}`;
                             
                             try {
                                 const url = await uploadFileToGitHub(token, path, file);
                                 pages.push(url);
-                                showProgress(`✓ Trang ${j+1}/${files.length}: ${file.name}`);
+                                showProgress(`✓ Trang ${j+1}/${files.length}`);
                             } catch (err) {
-                                throw new Error(`❌ Failed to upload ${file.name}: ${err.message}`);
+                                throw new Error(`Upload ảnh thất bại: ${err.message}`);
                             }
                         }
+                        
                     } else {
-                        // URL mode
+                        // 🔗 URL MODE: Use URLs directly, NO upload to GitHub
                         const urlTextarea = item.querySelector('.chapter-pages-url');
                         const urlsText = urlTextarea?.value.trim() || '';
                         
                         if (!urlsText) {
-                            showOutput(`❌ Chapter "${chapterName}": Vui lòng nhập URL ảnh hoặc chuyển sang tab "Tải file"`, 'error');
-                            submitBtn.disabled = false;
+                            showOutput(`❌ Chapter "${chapterName}": Vui lòng nhập ít nhất 1 URL ảnh ở chế độ "Nhập URL"`, 'error');                            submitBtn.disabled = false;
                             return;
                         }
                         
+                        // Parse and validate URLs
                         pages = urlsText
                             .split('\n')
                             .map(u => u.trim())
                             .filter(u => u && u.startsWith('http'));
                         
                         if (pages.length === 0) {
-                            showOutput(`❌ Chapter "${chapterName}": Không tìm thấy URL hợp lệ`, 'error');
+                            showOutput(`❌ Chapter "${chapterName}": Không tìm thấy URL hợp lệ (phải bắt đầu bằng http/https)`, 'error');
                             submitBtn.disabled = false;
-                            return;                        }
+                            return;
+                        }
+                        
+                        showProgress(`✓ Chapter "${chapterName}": Đã lấy ${pages.length} URL (không upload)`);
                     }
 
                     newChapters.push({
@@ -549,52 +516,36 @@
                 }
 
                 if (newChapters.length === 0) {
-                    showOutput('❌ Không có chapter hợp lệ để upload', 'error');
+                    showOutput('❌ Không có chapter hợp lệ để xử lý', 'error');
                     submitBtn.disabled = false;
                     return;
                 }
 
-                // Update or create comic
+                // Update or create comic in data.json
                 if (existingComic) {
-                    // Update existing comic
                     showProgress('🔄 Đang cập nhật chapter vào truyện...');
-                    
-                    // Add new chapters
                     existingComic.chapters.push(...newChapters);
-                    
-                    // Sort chapters by ID
                     existingComic.chapters.sort((a, b) => (a.id || 0) - (b.id || 0));
-                    
-                    // Update timestamp
                     existingComic.updatedAt = new Date().toISOString();
-                    
                 } else {
-                    // Create new comic
                     showProgress('📦 Đang tạo truyện mới...');
                     
-                    let coverUrl = '';
-                    
                     // Handle cover
-                    const coverUploadBtn = document.querySelector('.tab-btn[data-tab="upload-cover"]');
-                    const isCoverUpload = coverUploadBtn?.classList.contains('active');
+                    let coverUrl = '';
+                    const coverMode = document.querySelector('.tab-btn[data-tab="cover"][data-mode="upload"]')?.classList.contains('active') ? 'upload' : 'url';
                     
-                    if (isCoverUpload) {
-                        const coverFile = document.getElementById('cover-upload').files[0];
-                        if (!coverFile) {
-                            throw new Error('Vui lòng chọn ảnh bìa');
-                        }
-                        showProgress('🖼️ Đang upload ảnh bìa...');
-                        const safeCoverName = coverFile.name.replace(/[^a-z0-9._-]/gi, '_');
-                        const coverPath = `covers/${comicId}/${Date.now()}_${safeCoverName}`;
-                        coverUrl = await uploadFileToGitHub(token, coverPath, coverFile);                    } else {
-                        const coverUrlInput = document.getElementById('cover-url').value.trim();
-                        if (!coverUrlInput) {
-                            throw new Error('Vui lòng nhập URL ảnh bìa');
-                        }
-                        coverUrl = coverUrlInput.split('\n').map(u => u.trim()).find(u => u.startsWith('http'));
-                        if (!coverUrl) {
-                            throw new Error('URL ảnh bìa không hợp lệ');
-                        }
+                    if (coverMode === 'upload') {
+                        const coverFile = document.getElementById('cover-upload-input').files[0];
+                        if (!coverFile) throw new Error('Vui lòng chọn ảnh bìa');
+                        showProgress('🖼️ Đang upload ảnh bìa...');                        const safeName = coverFile.name.replace(/[^a-z0-9._-]/gi, '_');
+                        const path = `covers/${comicId}/${Date.now()}_${safeName}`;
+                        coverUrl = await uploadFileToGitHub(token, path, coverFile);
+                    } else {
+                        const coverUrls = document.getElementById('cover-url-input').value.trim();
+                        if (!coverUrls) throw new Error('Vui lòng nhập URL ảnh bìa');
+                        coverUrl = coverUrls.split('\n').map(u => u.trim()).find(u => u.startsWith('http'));
+                        if (!coverUrl) throw new Error('URL ảnh bìa không hợp lệ');
+                        // Cover URL is used directly, no upload
                     }
                     
                     const newComic = {
@@ -607,16 +558,15 @@
                         updatedAt: new Date().toISOString(),
                         status: 'ongoing'
                     };
-                    
                     existingData.comics.push(newComic);
                 }
 
-                // Save updated data.json with proper Unicode encoding
+                // Save data.json with UTF-8 encoding
                 showProgress('💾 Đang lưu data.json...');
                 const jsonString = JSON.stringify(existingData, null, 2);
                 const encodedContent = utf8ToBase64(jsonString);
                 
-                const saveResponse = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
+                const saveRes = await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -632,34 +582,27 @@
                     })
                 });
                 
-                if (!saveResponse.ok) {
-                    const errText = await saveResponse.text();
-                    throw new Error(`Không thể lưu data.json: ${saveResponse.status} - ${errText}`);
+                if (!saveRes.ok) {
+                    const errText = await saveRes.text();
+                    throw new Error(`Không thể lưu data.json: ${saveRes.status} - ${errText}`);
                 }
-                // Success message
-                const totalChapters = existingComic 
-                    ? existingComic.chapters.length 
-                    : newChapters.length;
-                    
+                // Success
+                const totalChapters = existingComic ? existingComic.chapters.length : newChapters.length;
                 const successMsg = existingComic
-                    ? `✅ Cập nhật thành công!\n📚 Truyện: "${existingComic.title}"\n📥 Đã thêm: ${newChapters.length} chapter mới\n📊 Tổng chapter: ${totalChapters}\n\n🔗 Chapter vừa thêm:\n${newChapters.map(c => `• ${c.name} (ID: ${c.id})`).join('\n')}`
-                    : `✅ Thêm truyện mới thành công!\n📚 Tên: "${title}"\n🆔 ID: ${comicId}\n📥 Số chapter: ${newChapters.length}\n📊 Tổng truyện trong hệ thống: ${existingData.comics.length}`;
+                    ? `✅ Cập nhật thành công!\n📚 Truyện: "${existingComic.title}"\n📥 Đã thêm: ${newChapters.length} chapter\n📊 Tổng chapter: ${totalChapters}\n\n🔗 Chapters:\n${newChapters.map(c => `• ${c.name} (ID: ${c.id}) - ${c.pages.length} trang`).join('\n')}`
+                    : `✅ Thêm truyện mới thành công!\n📚 Tên: "${title}"\n🆔 ID: ${comicId}\n📥 Số chapter: ${newChapters.length}\n📊 Tổng truyện: ${existingData.comics.length}`;
                 
                 showOutput(successMsg, 'success');
                 
-                // Optional: Reset form after success
-                // document.getElementById('chapters-container').innerHTML = '';
-                // chapterCounter = 1;
-                
             } catch (err) {
                 console.error('Upload error:', err);
-                showOutput(`❌ Lỗi: ${err.message}\n\n💡 Kiểm tra:\n• GitHub Token còn hạn và có quyền repo\n• ID truyện không trùng ký tự đặc biệt\n• URL ảnh hợp lệ (không chứa tiếng Việt/có dấu)\n• File data.json tồn tại trong repo`, 'error');
+                showOutput(`❌ Lỗi: ${err.message}\n\n💡 Kiểm tra:\n• GitHub Token còn hạn, có quyền repo\n• ID truyện không chứa ký tự đặc biệt\n• URL ảnh hợp lệ (http/https)\n• File data.json tồn tại trong repo`, 'error');
             } finally {
                 submitBtn.disabled = false;
             }
         });
 
-        // Initialize with one chapter
+        // Auto-add first chapter on load
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('add-chapter').click();
         });
