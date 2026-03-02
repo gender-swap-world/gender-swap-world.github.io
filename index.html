@@ -47,8 +47,7 @@
         .search-input {
             width: 0;
             padding: 0;
-            border: none;            background: transparent;
-            color: #e0e0e0;
+            border: none;                       color: #e0e0e0;
             outline: none;
             font-size: 1rem;
             opacity: 0;
@@ -88,25 +87,27 @@
         }
         .comic-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr 15px;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* ✅ Thẻ nhỏ hơn */
+            gap: 12px; /* ✅ Khoảng cách nhỏ hơn */
             padding: 10px 0;
         }
         .comic-card {
             background: #3a3a3a;
-            border-radius: 10px;
+            border-radius: 8px; /* ✅ Bo tròn nhỏ hơn */
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease;            cursor: pointer;
+            text-align: center; /* ✅ Căn giữa nội dung */
         }
-        .comic-card:hover { transform: translateY(-8px); }
+        .comic-card:hover { transform: translateY(-5px); }
         .comic-cover {
             width: 100%;
-            height: 200px;
+            height: 170px; /* ✅ Ảnh nhỏ hơn */
             object-fit: cover;
         }
         .comic-title {
-            padding: 8px;
-            font-size: 0.9rem;
+            padding: 6px;
+            font-size: 0.8rem; /* ✅ Chữ nhỏ hơn, dễ đọc */
             color: #ffcc00;
             white-space: nowrap;
             overflow: hidden;
@@ -134,7 +135,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Thế Giới Truyện Tranh with ❤️ by Coconut</p>
+        <p>&copy; 2026 Thế Giới Truyện Tranh GenBen | Designed with ❤️ by Coconut</p>
     </footer>
 
     <script>
@@ -144,8 +145,8 @@
             const data = await response.json();
             return data.comics || [];
         }
-
-        function getComicTitle(comic) {            if (comic.title && typeof comic.title === 'string' && comic.title.trim()) {
+        function getComicTitle(comic) {
+            if (comic.title && typeof comic.title === 'string' && comic.title.trim()) {
                 return comic.title.trim();
             }
             return 'Unknown';
@@ -193,8 +194,8 @@
         const searchInput = document.getElementById('search-input');
 
         toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            searchInput.classList.toggle('expanded');            if (searchInput.classList.contains('expanded')) {
+            e.stopPropagation();            searchInput.classList.toggle('expanded');
+            if (searchInput.classList.contains('expanded')) {
                 searchInput.focus();
             } else {
                 searchInput.value = '';
