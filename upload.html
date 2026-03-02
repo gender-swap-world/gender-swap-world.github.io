@@ -82,110 +82,6 @@
         .chapter-item {
             background: #3a3a3a;
             padding: 12px;
-            borderCảm ơn bạn — bạn muốn:
-
-✅ **Vẫn giữ nguyên giao diện gọn gàng, dễ dùng**  
-✅ **Hỗ trợ cả 2 cách**:  
-- 🖼️ **Tải lên file ảnh** (local → GitHub)  
-- 🔗 **Dán URL ảnh trực tiếp**
-
----
-
-## ✅ Mình đã viết lại **`upload.html` hoàn chỉnh**, với:
-
-- Giao diện hiện đại, rõ ràng, responsive
-- Tự động tạo `id` truyện từ tên (không trùng)
-- Hỗ trợ upload ảnh lên GitHub (dùng PAT)
-- Không lỗi, chạy ổn định trên mọi trình duyệt
----
-
-### 📄 `upload.html` – ĐÃ SỬA HOÀN CHỈNH
-
-```html
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Upload Truyện | Thế Giới GenBen</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #ffcc00;
-            margin-bottom: 24px;
-            font-weight: bold;
-        }
-        .card {
-            background: #2c2c2c;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #444;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #ccc;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            background: #3a3a3a;            border: 1px solid #555;
-            border-radius: 6px;
-            color: #e0e0e0;
-            font-size: 1rem;
-        }
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            background: #444;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-        .tab-btn.active {
-            background: #ffcc00;
-            color: #2c2c2c;
-            font-weight: bold;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .chapter-list {
-            margin-top: 16px;
-        }
-        .chapter-item {
-            background: #3a3a3a;
-            padding: 12px;
             border-radius: 6px;
             margin-bottom: 12px;
             display: flex;
@@ -194,13 +90,13 @@
         }
         .chapter-title {
             font-weight: 500;
-        }        .btn {
+        }
+        .btn {
             padding: 8px 16px;
             background: #ffcc00;
             color: #2c2c2c;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: 6px;            font-weight: bold;
             cursor: pointer;
             font-size: 0.9rem;
         }
@@ -243,25 +139,25 @@
 
         <div class="card">
             <label for="token">GitHub Token (PAT)</label>
-            <input type="password" id="token" placeholder="ghp_..." required />        </div>
+            <input type="password" id="token" required />
+        </div>
 
         <div class="card">
             <label>Tên truyện</label>
-            <input type="text" id="title" placeholder="Ví dụ: How the Little Brother Who Turned Into a Girl..." required />
-
+            <input type="text" id="title" required />
             <label>Mô tả</label>
-            <textarea id="description" placeholder="Một vài dòng giới thiệu..."></textarea>
+            <textarea id="description"></textarea>
 
             <label>Ảnh bìa</label>
             <div class="tabs">
-                <button class="tab-btn active" data-tab="upload-cover">📁 Tải lên</button>
-                <button class="tab-btn" data-tab="url-cover">🔗 URL</button>
+                <button class="tab-btn active" data-tab="upload-cover">📁 Tải file</button>
+                <button class="tab-btn" data-tab="url-cover">🔗 Nhập URL</button>
             </div>
             <div id="upload-cover" class="tab-content active">
-                <input type="file id="cover-upload" accept="image/*" />
+                <input type="file" id="cover-upload" accept="image/*" />
             </div>
             <div id="url-cover" class="tab-content">
-                <input type="text" id="cover-url" placeholder="https://example.com/cover.jpg" />
+                <textarea id="cover-url" placeholder="Dán URL ảnh bìa, mỗi dòng 1 ảnh"></textarea>
             </div>
         </div>
 
@@ -281,19 +177,14 @@
                 </div>
                 <div class="form-group">
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="upload-pages-0">📁 Tải ảnh</button>
-                        <button class="tab-btn" data-tab="url-pages-0">🔗 URL ảnh</button>
+                        <button class="tab-btn active" data-tab="upload-pages-0">📁 Tải file</button>
+                        <button class="tab-btn" data-tab="url-pages-0">🔗 Nhập URL</button>
                     </div>
                     <div id="upload-pages-0" class="tab-content active">
                         <input type="file" multiple class="chapter-pages-upload" accept="image/*" />
                     </div>
                     <div id="url-pages-0" class="tab-content">
-                        <div class="pages-url-container">
-                            <div class="page-input">
-                                <input type="text" class="page-url-input" placeholder="https://example.com/page1.jpg" />
-                                <button class="btn btn-outline remove-page">-</button>
-                            </div>                        </div>
-                        <button class="btn" style="margin-top:8px;" type="button" class="add-page-url">+ Thêm URL ảnh</button>
+                        <textarea class="chapter-pages-url" placeholder="Dán URL ảnh, mỗi dòng 1 ảnh"></textarea>
                     </div>
                 </div>
             </div>
@@ -303,8 +194,7 @@
             <button class="btn" id="submit-btn">📤 Upload Truyện & Ảnh Lên GitHub</button>
         </div>
 
-        <div id="progress"></div>
-        <div id="output"></div>
+        <div id="progress"></div>        <div id="output"></div>
     </div>
 
     <script>
@@ -335,31 +225,25 @@
                     <div class="chapter-title">Chapter ${chapterIndex}</div>
                     <input type="text" class="chapter-name" placeholder="Tên chương..." />
                 </div>
-                <button classbtn btn-outline remove-chapter">🗑️</button>
+                <button class="btn btn-outline remove-chapter">🗑️</button>
             `;
             container.appendChild(chapterItem);
 
             const pagesContainer = document.createElement('div');
             pagesContainer.className = 'form-group';
-            pagesContainer.innerHTML = `                <div class="tabs">
-                    <button class="tab-btn active" data-tab="upload-pages-${chapterIndex}">📁 Tải ảnh</button>
-                    <button class="tab-btn" data-tab="url-pages-${chapterIndex}">🔗 URL ảnh</button>
+            pagesContainer.innerHTML = `
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="upload-pages-${chapterIndex}">📁 Tải file</button>
+                    <button class="tab-btn" data-tab="url-pages-${chapterIndex}">🔗 Nhập URL</button>
                 </div>
                 <div id="upload-pages-${chapterIndex}" class="tab-content active">
                     <input type="file" multiple class="chapter-pages-upload" accept="image/*" />
                 </div>
                 <div id="url-pages-${chapterIndex}" class="tab-content">
-                    <div class="pages-url-container">
-                        <div class="page-input">
-                            <input type="text" class="page-url-input" placeholder="https://example.com/page1.jpg" />
-                            <button class="btn btn-outline remove-page">-</button>
-                        </div>
-                    </div>
-                    <button class="btn" type="button" class="add-page-url">+ Thêm URL ảnh</button>
+                    <textarea class="chapter-pages-url" placeholder="Dán URL ảnh, mỗi dòng 1 ảnh"></textarea>
                 </div>
             `;
             container.appendChild(pagesContainer);
-
             // Setup tab
             pagesContainer.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -371,26 +255,11 @@
                 });
             });
 
-            // Setup add/remove page URL
-            pagesContainer.querySelector('.add-page-url').addEventListener('click', () => {
-                const containerDiv = pagesContainer.querySelector('.pages-url-container');
-                const newInput = document.createElement('div');
-                newInput.className = 'page-input';
-                newInput.innerHTML = `
-                    <input type="text" class="page-url-input" placeholder="https://example.com/page.jpg" />
-                    <button class="btn btn-outline remove-page">-</button>
-                `;
-                containerDiv.appendChild(newInput);
-                newInput.querySelector('.remove-page').addEventListener('click', () => newInput.remove());
-            });
-            pagesContainer.querySelectorAll('.remove-page').forEach(btn => {
-                btn.addEventListener('click', () => btn.parentElement.remove());
-            });
-
             // Remove chapter
             chapterItem.querySelector('.remove-chapter').addEventListener('click', () => {
                 chapterItem.remove();
-                pagesContainer.remove();            });
+                pagesContainer.remove();
+            });
         });
 
         // Submit
@@ -423,23 +292,24 @@
                 // Xử lý ảnh bìa
                 let coverUrl = '';
                 if (document.getElementById('upload-cover').classList.contains('active')) {
-                    const file = document.getElementById('cover-upload').files[0];
-                    if (file) {
+                    const file = document.getElementById('cover-upload').files[0];                    if (file) {
                         progress.textContent = '📷 Đang upload ảnh bìa...';
                         coverUrl = await uploadFile(token, `covers/${Date.now()}_${file.name}`, file);
                     } else {
                         throw new Error('Vui lòng chọn ảnh bìa');
                     }
                 } else {
-                    coverUrl = document.getElementById('cover-url').value.trim();
-                    if (!coverUrl) throw new Error('Vui lòng nhập URL ảnh bìa');
+                    const coverText = document.getElementById('cover-url').value.trim();
+                    if (!coverText) throw new Error('Vui lòng nhập URL ảnh bìa');
+                    coverUrl = coverText.split('\n')[0].trim(); // Lấy ảnh đầu tiên
                 }
 
                 // Xử lý các chương
                 const chapters = [];
                 const chapterItems = document.querySelectorAll('.chapter-item');
                 for (let i = 0; i < chapterItems.length; i++) {
-                    const name = chapterItems[i].querySelector('.chapter-name').value.trim();                    if (!name) continue;
+                    const name = chapterItems[i].querySelector('.chapter-name').value.trim();
+                    if (!name) continue;
 
                     let pages = [];
 
@@ -454,8 +324,10 @@
                             pages.push(url);
                         }
                     } else if (urlTab && urlTab.classList.contains('active')) {
-                        const urls = Array.from(urlTab.querySelectorAll('.page-url-input')).map(inp => inp.value.trim()).filter(u => u);
-                        pages = urls;
+                        const urls = document.getElementById(`url-pages-${i + 1}`).querySelector('textarea').value.trim();
+                        if (urls) {
+                            pages = urls.split('\n').map(u => u.trim()).filter(Boolean);
+                        }
                     }
 
                     chapters.push({
@@ -469,8 +341,7 @@
                 const newComic = {
                     id: title.toLowerCase().replace(/\s+/g, '_') + '-' + Date.now(),
                     title: title,
-                    desc: desc,
-                    cover: coverUrl,
+                    desc: desc,                    cover: coverUrl,
                     chapters: chapters
                 };
 
@@ -488,7 +359,8 @@
                     body: JSON.stringify({
                         message: `Add comic: ${title}`,
                         content: encoded,
-                        sha: json.sha                    })
+                        sha: json.sha
+                    })
                 });
 
                 showOutput(`✅ Thành công! Đã thêm "${title}" vào data.json.\n→ Tổng số truyện: ${existing.comics.length}`, 'success');
@@ -518,8 +390,7 @@
                         const data = await res.json();
                         resolve(`https://raw.githubusercontent.com/${REPO_NAME}/main/${path}`);
                     } catch (e) {
-                        reject(e);
-                    }
+                        reject(e);                    }
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
