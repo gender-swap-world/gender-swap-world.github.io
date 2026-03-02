@@ -6,115 +6,355 @@
     <title>Đọc truyện</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            background-color: #1a1a1a;
+            background: #1a1a1a;
             color: #e0e0e0;
             font-family: 'Segoe UI', sans-serif;
-            padding: 20px;
+            line-height: 1.6;
         }
-        .container {
+        
+        /* Header */
+        .header {
+            background: #2c2c2c;
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .back-btn {
+            color: #ffcc00;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .back-btn:hover { text-decoration: underline; }
+        
+        .chapter-title {
+            color: #e0e0e0;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .nav-chapters {
+            display: flex;
+            gap: 8px;        }
+        
+        .nav-btn {
+            padding: 6px 12px;
+            background: #ffcc00;
+            color: #2c2c2c;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .nav-btn:hover { opacity: 0.9; }
+        .nav-btn:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+        }
+        
+        /* Pages Container - Vertical Scroll */
+        .pages-container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 10px;
         }
+        
         .page-img {
             width: 100%;
             height: auto;
             display: block;
-            margin: 0 auto;
+            margin: 0 auto 2px;
+            background: #000;
         }
-        .nav {
+        
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #ffcc00;
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 1.1rem;        }
+        
+        .error {
+            text-align: center;
+            padding: 60px 20px;
+            color: #f55;
+        }
+        
+        /* Chapter Navigation Footer */
+        .chapter-nav {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #2c2c2c;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
-            margin: 10px 0;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .btn {
-            padding: 10px 20px;
-            background: #ffcc00;
-            color: #2c2c2c;
-            border: none;
+        
+        .chapter-nav a {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            background: #3a3a3a;
+            color: #e0e0e0;
+            text-decoration: none;
+            text-align: center;
             border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
+            transition: background 0.2s;
         }
-        .btn:hover { opacity: 0.9; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .loading { text-align: center; color: #aaa; font-size: 1.2rem; margin: 50px 0; }
+        .chapter-nav a:hover { background: #4a4a4a; }
+        .chapter-nav a.disabled { 
+            opacity: 0.3; 
+            pointer-events: none; 
+        }
+        
+        /* Page Counter (floating) */
+        .page-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(44, 44, 44, 0.9);
+            color: #ffcc00;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);            z-index: 100;
+        }
+        
+        @media (max-width: 600px) {
+            .header { padding: 10px 15px; }
+            .chapter-title { font-size: 0.85rem; }
+            .nav-btn { padding: 5px 10px; font-size: 0.8rem; }
+            .page-counter { 
+                bottom: 15px; 
+                right: 15px; 
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="pages-container"></div>
-
-        <div class="nav">
-            <button class="btn" id="prev-btn">← Trang trước</button>            <span id="page-info">Trang 1/1</span>
-            <button class="btn" id="next-btn">Trang sau →</button>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progress-bar"></div>
+    
+    <!-- Header -->
+    <div class="header">
+        <a href="javascript:history.back()" class="back-btn">← Quay lại</a>
+        <span class="chapter-title" id="chapter-title">Đang tải...</span>
+        <div class="nav-chapters">
+            <button class="nav-btn" id="prev-chapter">← Chapter trước</button>
+            <button class="nav-btn" id="next-chapter">Chapter sau →</button>
         </div>
     </div>
+    
+    <!-- Pages -->
+    <div class="pages-container" id="pages-container">
+        <div class="loading">⏳ Đang tải chapter...</div>
+    </div>
+    
+    <!-- Chapter Navigation -->
+    <div class="chapter-nav" id="chapter-nav" style="display:none;">
+        <a href="#" id="prev-ch-link" class="disabled">← Chapter trước</a>
+        <a href="#" id="next-ch-link" class="disabled">Chapter sau →</a>
+    </div>
+    
+    <!-- Page Counter -->
+    <div class="page-counter" id="page-counter">0/0</div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const comicId = urlParams.get('comic');
         const chapterId = parseInt(urlParams.get('chapter'));
-
-        let currentComic = null;
+        
+        let comics = [];        let currentComic = null;
         let currentChapter = null;
-        let currentPageIndex = 0;
+        let currentChapterIndex = 0;
 
+        // Fetch data with cache-busting
         async function fetchData() {
-            const response = await fetch('./data.json');
-            const data = await response.json();
+            const res = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error('Không tải được data.json');
+            const data = await res.json();
             return data.comics;
         }
-
+        
+        // Find comic and chapter
         function findComicAndChapter() {
-            const comics = window.allComics;
             currentComic = comics.find(c => c.id === comicId);
-            if (currentComic) {
-                currentChapter = currentComic.chapters.find(ch => ch.id === chapterId);
-            }
+            if (!currentComic) return false;
+            
+            currentChapter = currentComic.chapters.find(ch => ch.id === chapterId);
+            if (!currentChapter) return false;
+            
+            // Find chapter index for navigation
+            const sortedChapters = [...currentComic.chapters].sort((a, b) => a.id - b.id);
+            currentChapterIndex = sortedChapters.findIndex(ch => ch.id === chapterId);
+            
+            return true;
         }
-
-        function renderPage() {
+        
+        // Render all pages vertically
+        function renderPages() {
             const container = document.getElementById('pages-container');
-            const page = currentChapter.pages[currentPageIndex];
-
-            container.innerHTML = `<img src="${page}" class="page-img" />`;
-
-            document.getElementById('page-info').textContent = `Trang ${currentPageIndex + 1}/${currentChapter.pages.length}`;
-
-            document.getElementById('prev-btn').disabled = currentPageIndex === 0;
-            document.getElementById('next-btn').disabled = currentPageIndex === currentChapter.pages.length - 1;
-        }
-
-        document.getElementById('prev-btn').addEventListener('click', () => {
-            if (currentPageIndex > 0) {
-                currentPageIndex--;
-                renderPage();
-                window.scrollTo(0, 0);
-            }
-        });
-
-        document.getElementById('next-btn').addEventListener('click', () => {
-            if (currentPageIndex < currentChapter.pages.length - 1) {                currentPageIndex++;
-                renderPage();
-                window.scrollTo(0, 0);
-            }
-        });
-
-        async function init() {
-            const comics = await fetchData();
-            window.allComics = comics;
-
-            findComicAndChapter();
-            if (!currentChapter) {
-                document.getElementById('pages-container').innerHTML = '<div class="loading">Chương không tồn tại</div>';
+            const chapterTitle = document.getElementById('chapter-title');
+            
+            if (!currentChapter || !currentChapter.pages || currentChapter.pages.length === 0) {
+                container.innerHTML = '<div class="error">❌ Chapter không có trang nào</div>';
                 return;
             }
-
-            renderPage();
+            
+            // Update title
+            chapterTitle.textContent = `${currentComic.title} - ${currentChapter.name}`;
+            
+            // Render all images
+            container.innerHTML = currentChapter.pages
+                .map((pageUrl, index) => `
+                    <img src="${escapeHtml(pageUrl)}" 
+                         class="page-img" 
+                         alt="Page ${index + 1}"
+                         loading="${index < 3 ? 'eager' : 'lazy'}"
+                         onerror="this.style.display='none'; console.error('Failed to load:', '${escapeHtml(pageUrl)}')">
+                `)
+                .join('');            
+            // Setup chapter navigation
+            setupChapterNav();
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
         }
-
+        
+        // Setup chapter navigation
+        function setupChapterNav() {
+            const prevBtn = document.getElementById('prev-chapter');
+            const nextBtn = document.getElementById('next-chapter');
+            const prevLink = document.getElementById('prev-ch-link');
+            const nextLink = document.getElementById('next-ch-link');
+            const chapterNav = document.getElementById('chapter-nav');
+            
+            const totalChapters = currentComic.chapters.length;
+            
+            // Previous chapter
+            if (currentChapterIndex > 0) {
+                const prevChapter = currentComic.chapters.find(ch => ch.id === currentComic.chapters.sort((a,b)=>a.id-b.id)[currentChapterIndex - 1].id);
+                if (prevChapter) {
+                    const href = `reader.html?comic=${comicId}&chapter=${prevChapter.id}`;
+                    prevBtn.disabled = false;
+                    prevLink.href = href;
+                    prevLink.classList.remove('disabled');
+                    prevBtn.onclick = () => location.href = href;
+                }
+            } else {
+                prevBtn.disabled = true;
+                prevLink.classList.add('disabled');
+            }
+            
+            // Next chapter
+            if (currentChapterIndex < totalChapters - 1) {
+                const nextChapter = currentComic.chapters.find(ch => ch.id === currentComic.chapters.sort((a,b)=>a.id-b.id)[currentChapterIndex + 1].id);
+                if (nextChapter) {
+                    const href = `reader.html?comic=${comicId}&chapter=${nextChapter.id}`;
+                    nextBtn.disabled = false;
+                    nextLink.href = href;
+                    nextLink.classList.remove('disabled');
+                    nextBtn.onclick = () => location.href = href;
+                }
+            } else {
+                nextBtn.disabled = true;
+                nextLink.classList.add('disabled');
+            }
+            
+            chapterNav.style.display = 'flex';
+        }        
+        // Progress bar & page counter
+        function updateProgress() {
+            const images = document.querySelectorAll('.page-img');
+            if (images.length === 0) return;
+            
+            const scrollPos = window.scrollY + window.innerHeight / 2;
+            const docHeight = document.documentElement.scrollHeight;
+            const progress = (scrollPos / docHeight) * 100;
+            
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            // Find current visible page
+            let currentPage = 1;
+            images.forEach((img, index) => {
+                const rect = img.getBoundingClientRect();
+                if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
+                    currentPage = index + 1;
+                }
+            });
+            
+            document.getElementById('page-counter').textContent = `${currentPage}/${images.length}`;
+        }
+        
+        // Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                window.scrollBy(0, -window.innerHeight * 0.8);
+            } else if (e.key === 'ArrowDown') {
+                window.scrollBy(0, window.innerHeight * 0.8);
+            }
+        });
+        
+        // Init
+        async function init() {
+            try {
+                comics = await fetchData();
+                
+                if (!findComicAndChapter()) {
+                    document.getElementById('pages-container').innerHTML = 
+                        '<div class="error">❌ Không tìm thấy chapter</div>';
+                    return;                }
+                
+                renderPages();
+                
+                // Listen to scroll for progress
+                window.addEventListener('scroll', updateProgress);
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('pages-container').innerHTML = 
+                    `<div class="error">❌ Lỗi: ${err.message}<br><button onclick="location.reload()" style="margin-top:12px;padding:8px 16px;background:#ffcc00;border:none;border-radius:4px;cursor:pointer;">🔄 Thử lại</button></div>`;
+            }
+        }
+        
         init();
     </script>
 </body>
