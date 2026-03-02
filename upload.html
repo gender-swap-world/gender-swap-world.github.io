@@ -347,9 +347,12 @@
 
                 existing.comics.push(newComic);
 
+                // ✅ FIX: Encode JSON đúng Unicode
+                const jsonString = JSON.stringify(existing, null, 2);
+                const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
                 // Cập nhật data.json
                 progress.textContent = '💾 Đang cập nhật data.json...';
-                const encoded = btoa(JSON.stringify(existing, null, 2));
                 await fetch(`https://api.github.com/repos/${REPO_NAME}/contents/data.json`, {
                     method: 'PUT',
                     headers: {
@@ -358,7 +361,7 @@
                     },
                     body: JSON.stringify({
                         message: `Add comic: ${title}`,
-                        content: encoded,
+                        content: encodedContent,
                         sha: json.sha
                     })
                 });
@@ -387,10 +390,10 @@
                             })
                         });
                         if (!res.ok) throw new Error(await res.text());
-                        const data = await res.json();
-                        resolve(`https://raw.githubusercontent.com/${REPO_NAME}/main/${path}`);
+                        const data = await res.json();                        resolve(`https://raw.githubusercontent.com/${REPO_NAME}/main/${path}`);
                     } catch (e) {
-                        reject(e);                    }
+                        reject(e);
+                    }
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
