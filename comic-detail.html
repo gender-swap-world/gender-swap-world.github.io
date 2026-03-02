@@ -11,6 +11,7 @@
             color: #e0e0e0;
             font-family: 'Segoe UI', sans-serif;
             padding: 20px;
+            line-height: 1.6;
         }
         .container {
             max-width: 800px;
@@ -19,8 +20,9 @@
         .comic-title {
             font-size: 1.8rem;
             color: #ffcc00;
-            margin-bottom: 20px;
+            margin: 20px 0;
             text-align: center;
+            word-wrap: break-word;
         }
         .comic-cover {
             width: 100%;
@@ -37,26 +39,49 @@
             background: #3a3a3a;
             border-radius: 8px;
             margin-bottom: 20px;
-            line-height: 1.6;
             color: #ccc;
             white-space: pre-wrap;
+            word-wrap: break-word;
         }
         .chapter-list {
             margin-top: 20px;
         }
         .chapter-list h2 {
-            color: #ffcc00;
-            margin-bottom: 12px;
-        }        .chapter-item {
-            padding: 12px;
+            color: #ffcc00;            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chapter-count {
+            font-size: 0.9rem;
+            color: #888;
+            font-weight: normal;
+        }
+        .chapter-item {
+            padding: 12px 16px;
             background: #3a3a3a;
             border-radius: 6px;
             margin-bottom: 8px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
         }
         .chapter-item:hover {
             background: #4a4a4a;
+            border-color: #ffcc00;
+        }
+        .chapter-name {
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        .chapter-meta {
+            font-size: 0.85rem;
+            color: #888;
+            white-space: nowrap;
+            margin-left: 12px;
         }
         .back-btn {
             padding: 10px 16px;
@@ -67,76 +92,284 @@
             cursor: pointer;
             font-size: 0.9rem;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }        .back-btn:hover { opacity: 0.9; }
+        
+        /* Loading & Error States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 1.1rem;
         }
-        .back-btn:hover { opacity: 0.9; }
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #f55;
+            background: #3a2a2a;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .error button {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #f55;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .empty-chapters {
+            color: #888;
+            padding: 20px;
+            text-align: center;
+            background: #3a3a3a;
+            border-radius: 6px;
+        }
+        
+        /* Refresh button */
+        .refresh-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: auto;
+        }
+        .refresh-btn:hover {
+            background: #555;
+            color: #fff;
+        }
+                @media (max-width: 600px) {
+            .comic-title { font-size: 1.4rem; }
+            .chapter-item { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .chapter-meta { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="./" class="back-btn">← Về trang chủ</a>
 
-        <h1 id="title" class="comic-title"></h1>
-        <img id="cover" class="comic-cover" src="" alt="Ảnh bìa" />
-        <div id="desc" class="comic-desc"></div>
+        <div id="loading" class="loading">⏳ Đang tải thông tin truyện...</div>
+        <div id="error" class="error" style="display:none;"></div>
+        
+        <div id="comic-content" style="display:none;">
+            <h1 id="title" class="comic-title"></h1>
+            <img id="cover" class="comic-cover" src="" alt="Ảnh bìa" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22350%22 viewBox=%220 0 250 350%22%3E%3Crect fill=%22%233a3a3a%22 width=%22250%22 height=%22350%22/%3E%3Ctext fill=%22%23666%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2214%22%3ENo Image%3C/text%3E%3C/svg%3E'" />
+            <div id="desc" class="comic-desc"></div>
 
-        <div class="chapter-list">
-            <h2>Danh sách chapter</h2>
-            <div id="chapters-container"></div>
+            <div class="chapter-list">
+                <h2>
+                    Danh sách chapter 
+                    <span id="chapter-count" class="chapter-count"></span>
+                    <button id="refresh-btn" class="refresh-btn" title="Tải lại dữ liệu mới">🔄 Refresh</button>
+                </h2>
+                <div id="chapters-container"></div>
+            </div>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const comicId = urlParams.get('id');
+        const REPO_RAW_BASE = 'https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main';
+        const DATA_JSON_URL = `${REPO_RAW_BASE}/data.json`;
 
-        async function fetchData() {
-            const response = await fetch('./data.json');
+        // ========== Utility Functions ==========
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showError(msg, canRetry = true) {
+            const el = document.getElementById('error');
+            el.textContent = msg;
+            el.style.display = 'block';
+            el.innerHTML = msg + (canRetry ? `<br><button onclick="location.reload()">🔄 Thử lại</button>` : '');
+            document.getElementById('comic-content').style.display = 'none';
+        }
+        
+        function hideError() {            document.getElementById('error').style.display = 'none';
+        }
+
+        // ========== Fetch with Cache-Busting ==========
+        async function fetchComics(forceRefresh = false) {
+            // Cache-busting: add timestamp to bypass browser cache
+            const cacheParam = forceRefresh ? `?t=${Date.now()}` : `?t=${Math.floor(Date.now() / 3600000)}`; // Refresh hourly by default
+            const url = DATA_JSON_URL + cacheParam;
+            
+            console.log(`📡 Fetching: ${url}`);
+            
+            const response = await fetch(url, {
+                cache: 'no-store', // Tell browser not to use cache
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Không thể tải data.json: ${response.status} ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            
+            if (!data.comics || !Array.isArray(data.comics)) {
+                throw new Error('Dữ liệu truyện không hợp lệ');
+            }
+            
             return data.comics;
         }
 
-        function findComic() {            return window.allComics.find(c => c.id === comicId);
+        // ========== Find & Render ==========
+        function findComic(comics, id) {
+            return comics.find(c => c && c.id === id);
         }
 
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('vi-VN', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            } catch {
+                return '';
+            }
+        }
         function renderComic(comic) {
-            document.getElementById('title').textContent = comic.title;
-            document.getElementById('cover').src = comic.cover;
-            document.getElementById('desc').textContent = comic.desc || 'Không có mô tả';
+            // Basic info
+            document.getElementById('title').textContent = comic.title || 'Không có tiêu đề';
+            
+            // Cover image with fallback
+            const coverEl = document.getElementById('cover');
+            if (comic.cover) {
+                coverEl.src = comic.cover;
+                coverEl.onerror = () => {
+                    console.warn('⚠️ Cover load failed:', comic.cover);
+                    coverEl.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22350%22 viewBox=%220 0 250 350%22%3E%3Crect fill=%22%233a3a3a%22 width=%22250%22 height=%22350%22/%3E%3Ctext fill=%22%23666%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2214%22%3ENo Image%3C/text%3E%3C/svg%3E';
+                };
+            } else {
+                coverEl.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22350%22 viewBox=%220 0 250 350%22%3E%3Crect fill=%22%233a3a3a%22 width=%22250%22 height=%22350%22/%3E%3Ctext fill=%22%23666%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2214%22%3ENo Cover%3C/text%3E%3C/svg%3E';
+            }
+            
+            // Description
+            const descEl = document.getElementById('desc');
+            descEl.textContent = comic.desc || 'Không có mô tả';
+            // Preserve newlines and handle escaped quotes
+            descEl.innerHTML = (comic.desc || 'Không có mô tả')
+                .replace(/\\n/g, '\n')
+                .replace(/\\"/g, '"');
 
+            // Chapters
             const container = document.getElementById('chapters-container');
+            const countEl = document.getElementById('chapter-count');
             container.innerHTML = '';
-
-            if (!comic.chapters || comic.chapters.length === 0) {
-                container.innerHTML = '<div style="color:#aaa;">Chưa có chapter nào.</div>';
+            
+            let chapters = comic.chapters || [];
+            
+            if (chapters.length === 0) {
+                container.innerHTML = '<div class="empty-chapters">📭 Chưa có chapter nào. Hãy quay lại sau!</div>';
+                countEl.textContent = '';
                 return;
             }
-
-            comic.chapters.forEach(ch => {
+            
+            // ✅ SORT chapters by ID (ascending) - NEW CHAPTERS WILL APPEAR LAST
+            chapters = [...chapters].sort((a, b) => {
+                const idA = typeof a.id === 'number' ? a.id : parseInt(a.id) || 0;
+                const idB = typeof b.id === 'number' ? b.id : parseInt(b.id) || 0;
+                return idA - idB;
+            });
+            
+            countEl.textContent = `(${chapters.length} chapter)`;
+            
+            // Render each chapter (reverse order: newest first)
+            [...chapters].reverse().forEach(ch => {
+                if (!ch || !ch.name) return; // Skip invalid entries                
                 const div = document.createElement('div');
                 div.className = 'chapter-item';
-                div.textContent = ch.name;
+                
+                const pageHint = ch.pages?.length ? `• ${ch.pages.length} trang` : '';
+                const dateHint = ch.uploadedAt ? formatDate(ch.uploadedAt) : '';
+                
+                div.innerHTML = `
+                    <span class="chapter-name">${ch.name}</span>
+                    <span class="chapter-meta">${pageHint} ${dateHint ? '• ' + dateHint : ''}</span>
+                `;
+                
                 div.onclick = () => {
-                    window.location.href = `reader.html?comic=${comic.id}&chapter=${ch.id}`;
+                    // Navigate to reader with chapter ID
+                    const readerUrl = `reader.html?comic=${encodeURIComponent(comic.id)}&chapter=${ch.id}`;
+                    console.log(`🔗 Opening: ${readerUrl}`);
+                    window.location.href = readerUrl;
                 };
+                
                 container.appendChild(div);
             });
         }
 
-        async function init() {
-            const comics = await fetchData();
-            window.allComics = comics;
-
-            const comic = findComic();
-            if (!comic) {
-                document.body.innerHTML = '<div style="text-align: center; color: #aaa; font-size: 1.2rem; margin: 50px 0;">Truyện không tồn tại</div>';
-                return;
+        // ========== Main Init ==========
+        async function init(forceRefresh = false) {
+            showLoading(true);
+            hideError();
+            document.getElementById('comic-content').style.display = 'none';
+            
+            try {
+                if (!comicId) {
+                    throw new Error('Thiếu ID truyện trong URL');
+                }
+                
+                console.log(`🔍 Loading comic: ${comicId}`);
+                const comics = await fetchComics(forceRefresh);
+                const comic = findComic(comics, comicId);
+                
+                if (!comic) {
+                    // Try to suggest similar comics
+                    const similar = comics.filter(c => 
+                        c?.title?.toLowerCase().includes(comicId.toLowerCase().replace(/-/g, ' '))
+                    ).slice(0, 3);
+                    
+                    let msg = `❌ Không tìm thấy truyện với ID: "${comicId}"`;
+                    if (similar.length > 0) {
+                        msg += `\n\n💡 Có thể bạn muốn:\n${similar.map(c => `• ${c.title} (ID: ${c.id})`).join('\n')}`;
+                    }
+                    throw new Error(msg);
+                }                
+                console.log(`✅ Found comic: ${comic.title} (${comic.chapters?.length || 0} chapters)`);
+                renderComic(comic);
+                
+                showLoading(false);
+                document.getElementById('comic-content').style.display = 'block';
+                
+            } catch (err) {
+                console.error('❌ Init error:', err);
+                showLoading(false);
+                showError(`❌ ${err.message}`, true);
             }
-
-            renderComic(comic);
         }
 
-        init();
+        // ========== Refresh Button ==========
+        document.getElementById('refresh-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            init(true); // Force refresh with cache-busting
+        });
+
+        // ========== Start ==========
+        // Also listen for focus to auto-refresh when tab becomes active
+        window.addEventListener('focus', () => {
+            // Optional: auto-refresh when user returns to tab
+            // init(true);
+        });
+        
+        // Initial load
+        init(false);
     </script>
 </body>
 </html>
