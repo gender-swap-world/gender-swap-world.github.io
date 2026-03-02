@@ -2,8 +2,8 @@ name: Update MangaDex Data
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
-  workflow_dispatch: # Allows manual trigger
+    - cron: '0 */6 * * *'  # Chạy mỗi 6 giờ
+  workflow_dispatch: # Cho phép chạy thủ công
 
 jobs:
   update-data:
