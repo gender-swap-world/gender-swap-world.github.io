@@ -78,25 +78,32 @@
         }
         .upload-btn:hover { opacity: 0.9; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .section-title {
+            font-size: 1.4rem;
+            color: #ffcc00;
+            margin: 20px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #444;
+        }
         .comic-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
-            padding: 20px 0;
+            padding: 10px 0;
         }
         .comic-card {
             background: #3a3a3a;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-            cursor: pointer;
+           0.3s ease;            cursor: pointer;
         }
         .comic-card:hover { transform: translateY(-8px); }
         .comic-cover {
             width: 100%;
             height: 200px;
-            object-fit: cover;        }
+            object-fit: cover;
+        }
         .comic-title {
             padding: 8px;
             font-size: 0.9rem;
@@ -118,19 +125,26 @@
             <button class="search-toggle">🔍</button>
             <input type="text" id="search-input" class="search-input" placeholder="Tìm tên truyện...">
         </div>
-        <a href="upload.html" class="upload-btn">➕</a>
+        <a href="upload.html" class="upload-btn">➕ Upload</a>
     </div>
 
     <!-- Nội dung chính -->
     <div class="container">
+        <!-- Truyện Upload -->
+        <h2 class="section-title"> truyện đã upload</h2>
+        <div id="upload-comics" class="comic-list"></div>
+
+        <!-- Truyện từ MangaDex -->
+        <h2 class="section-title"> truyện từ MangaDex</h2>
+        <div id="mangadex-comics" class="comic-list"></div>
+
+        <!-- Loading -->
         <div id="loading" class="loading">Đang tải dữ liệu...</div>
-        <div id="comic-list" class="comic-list" style="display:none;"></div>
     </div>
 
     <footer>
         <p>&copy; 2026 Thế Giới Truyện Tranh GenBen | Designed with ❤️ by Coconut</p>
     </footer>
-
     <script>
         async function fetchData() {
             const timestamp = new Date().getTime();
@@ -139,16 +153,14 @@
             return data.comics;
         }
 
-        // Hàm render truyện
-        function renderComics(comics) {
-            const container = document.getElementById("comic-list");
+        function renderComics(comics, containerId) {
+            const container = document.getElementById(containerId);
             container.innerHTML = "";
 
             if (comics.length === 0) {
-                document.getElementById("loading").textContent = "Không tìm thấy truyện nào.";                return;
+                container.innerHTML = '<div class="loading">Không có truyện nào.</div>';
+                return;
             }
-
-            document.getElementById("loading").style.display = "none";
 
             comics.forEach(comic => {
                 const comicCard = document.createElement("a");
@@ -172,13 +184,17 @@
             const query = document.getElementById("search-input").value.toLowerCase();
             const allComics = window.allComics || [];
             const filtered = allComics.filter(comic => comic.title.toLowerCase().includes(query));
-            renderComics(filtered);
+            
+            const uploadComics = filtered.filter(c => !c.id.startsWith('md_'));
+            const mangadexComics = filtered.filter(c => c.id.startsWith('md_'));
+            
+            renderComics(uploadComics, 'upload-comics');
+            renderComics(mangadexComics, 'mangadex-comics');
         }
 
         // Toggle input mở rộng
         const toggleBtn = document.querySelector('.search-toggle');
         const searchInput = document.getElementById('search-input');
-
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             searchInput.classList.toggle('expanded');
@@ -186,7 +202,7 @@
                 searchInput.focus();
             } else {
                 searchInput.value = '';
-                renderComics(window.allComics || []);
+                loadAndRender();
             }
         });
 
@@ -194,7 +210,8 @@
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 handleSearch();
-            }        });
+            }
+        });
 
         // Đóng ô tìm kiếm khi click ngoài
         document.addEventListener('click', (e) => {
@@ -202,24 +219,24 @@
                 if (searchInput.classList.contains('expanded')) {
                     searchInput.classList.remove('expanded');
                     searchInput.value = '';
-                    renderComics(window.allComics || []);
+                    loadAndRender();
                 }
             }
         });
 
-        async function init() {
+        async function loadAndRender() {
             const comics = await fetchData();
             window.allComics = comics;
 
-            if (comics.length === 0) {
-                document.getElementById("loading").textContent = "Chưa có truyện nào cả.";
-                return;
-            }
+            const uploadComics = comics.filter(c => !c.id.startsWith('md_'));
+            const mangadexComics = comics.filter(c => c.id.startsWith('md_'));
 
-            renderComics(comics);
+            document.getElementById("loading").style.display = "none";
+            renderComics(uploadComics, 'upload-comics');
+            renderComics(mangadexComics, 'mangadex-comics');
         }
 
-        init();
+        loadAndRender();
     </script>
 </body>
 </html>
