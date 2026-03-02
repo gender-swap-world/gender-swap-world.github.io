@@ -1,0 +1,100 @@
+name: Update MangaDex Data
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Update data.json from MangaDex
+        run: |
+          # Tạo script inline
+          cat > update.js << 'EOF'
+          const fs = require('fs').promises;
+          const axios = require('axios');
+
+          const API = 'https://api.mangadex.org';
+
+          async function main() {
+            try {
+              console.log('Fetching manga list...');
+              const res = await axios.get(`${API}/manga`, {
+                params: {
+                  includedTags: 'df4de92c-07ea-4af0-b794-2f7d9ec2acdb', // Gender Swap
+                  availableTranslatedLanguage: ['vi'],
+                  limit: 20,
+                  includes: ['cover_art']
+                },
+                headers: {
+                  'User-Agent': 'GenBen-Updater/1.0 (github.com/tamdz123-code)'
+                }
+              });
+
+              let data;
+              try {
+                data = JSON.parse(await fs.readFile('data.json', 'utf8'));
+              } catch {
+                data = { comics: [] };
+              }
+              const existingIds = new Set(data.comics.map(c => c.id));
+              let added = 0;
+
+              for (const m of res.data.data) {
+                const id = 'md_' + m.id;
+                if (existingIds.has(id)) continue;
+
+                const cover = m.relationships.find(r => r.type === 'cover_art');
+                const coverUrl = cover 
+                  ? `https://uploads.mangadex.org/covers/${m.id}/${cover.attributes.fileName}.256.jpg`
+                  : 'https://placehold.co/300x400/444/ccc?text=No+Image';
+
+                data.comics.push({
+                  id,
+                  title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
+                  desc: m.attributes.description?.vi || m.attributes.description?.en || '',
+                  cover: coverUrl,
+                  chapters: []
+                });
+                added++;
+              }
+
+              if (added > 0) {
+                await fs.writeFile('data.json', JSON.stringify(data, null, 2));
+                console.log(`✅ Added ${added} new manga`);
+              } else {
+                console.log('ℹ️ No new manga');
+              }
+            } catch (e) {
+              console.error('❌ Error:', e.message);
+              process.exit(1);
+            }
+          }
+
+          main();
+          EOF
+
+          npm install axios
+          node update.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data.json
+          if git diff --quiet --staged; then
+            echo "No changes to commit"
+          else
+            git commit -m "🤖 Auto-update manga data from MangaDex"            git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
+          fi
