@@ -1,4 +1,4 @@
-name: Sync Full GenderSwap VN Manga
+name: Sync GenderSwap VN Manga
 
 on:
   schedule:
@@ -60,9 +60,7 @@ jobs:
               const chapters = [];
               for (let i = 0; i < res.data.data.length; i++) {
                 const ch = res.data.data[i];
-
-                // ✅ FIX: Dùng index + 1 làm ID duy nhất, không phụ thuộc vào số chapter từ MangaDex
-                const uniqueId = i + 1;
+                const uniqueId = i + 1; // ✅ Duy nhất theo thứ tự
 
                 const imagesRes = await axios.get(`https://api.mangadex.org/at-home/server/${ch.id}`, {
                   headers: { 'User-Agent': 'GenBen-Updater/1.0' }
@@ -73,7 +71,7 @@ jobs:
                 );
 
                 chapters.push({
-                  id: uniqueId,  // ✅ ĐẢM BẢO DUY NHẤT
+                  id: uniqueId,
                   name: `Chapter ${ch.attributes.chapter || uniqueId}: ${ch.attributes.title || ''}`,
                   pages: images
                 });
@@ -96,9 +94,9 @@ jobs:
               },
               headers: { 'User-Agent': 'GenBen-Updater/1.0' }
             });
+
             if (res.data.data.length === 0) {
-              console.log('ℹ️ No manga found with tag "Gender Swap".');
-              return;
+              console.log('ℹ️ No manga found with tag "Gender Swap".');              return;
             }
 
             console.log(`✅ Found ${res.data.data.length} manga with tag "Gender Swap".`);
@@ -110,45 +108,44 @@ jobs:
               data = { comics: [] };
             }
 
-            const existingMap = new Map(data.comics.map(c => [c.id, c]));
+            const existingIds = new Set(data.comics.map(c => c.id));
             let addedManga = 0;
             let updatedManga = 0;
 
             for (const m of res.data.data) {
-              console.log(`\n📖 Checking: ${m.attributes.title?.en || 'Unknown'}`);
-
               if (!(await hasVietnameseChapters(m.id))) {
-                console.log(`❌ No Vietnamese chapters for ${m.attributes.title?.en || m.id}`);
                 continue;
               }
 
-              console.log(`✅ Has Vietnamese chapters, fetching details...`);
-
               const id = 'md_' + m.id;
-              const cover = m.relationships.find(r => r.type === 'cover_art');
-              const coverUrl = cover 
-                ? `https://uploads.mangadex.org/covers/${m.id}/${cover.attributes.fileName}.256.jpg`
-                : 'https://placehold.co/300x400/444/ccc?text=No+Image';
 
-              const chapters = await fetchChapters(m.id);
+              if (existingIds.has(id)) {
+                // ✅ Cập nhật chapter nếu truyện đã có
+                const existingComic = data.comics.find(c => c.id === id);
+                const oldChapterIds = new Set(existingComic.chapters.map(c => c.id));
+                const newChapters = await fetchChapters(m.id);
+                const trulyNew = newChapters.filter(ch => !oldChapterIds.has(ch.id));
 
-              if (existingMap.has(id)) {
-                const existingComic = existingMap.get(id);
-                const existingChapterIds = new Set(existingComic.chapters.map(c => c.id));
-
-                const newChapters = chapters.filter(ch => !existingChapterIds.has(ch.id));
-                if (newChapters.length > 0) {
-                  existingComic.chapters.push(...newChapters);
+                if (trulyNew.length > 0) {
+                  existingComic.chapters.push(...trulyNew);
                   existingComic.chapters.sort((a, b) => a.id - b.id);
                   updatedManga++;
-                  console.log(`🔄 Updated ${existingComic.title} with ${newChapters.length} new chapters`);
+                  console.log(`🔄 Updated ${existingComic.title} with ${trulyNew.length} new chapters`);
                 }
               } else {
+                // ✅ Thêm truyện mới
+                const cover = m.relationships.find(r => r.type === 'cover_art');
+                const coverUrl = cover 
+                  ? `https://uploads.mangadex.org/covers/${m.id}/${cover.attributes.fileName}.256.jpg`
+                  : 'https://placehold.co/300x400/444/ccc?text=No+Image';
+
+                const chapters = await fetchChapters(m.id);
+
                 data.comics.push({
-                  id,                  title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
+                  id,
+                  title: m.attributes.title?.vi || m.attributes.title?.en || 'Unknown',
                   desc: m.attributes.description?.vi || m.attributes.description?.en || '',
-                  cover: coverUrl,
-                  chapters: chapters
+                  cover: coverUrl,                  chapters: chapters
                 });
                 addedManga++;
                 console.log(`✅ Added new manga: ${m.attributes.title?.vi || m.attributes.title?.en}`);
@@ -179,6 +176,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "🤖 Sync full manga data from MangaDex"
+            git commit -m "🤖 Add/update manga from MangaDex"
             git push "https://$GH_TOKEN@github.com/${{ github.repository }}.git"
           fi
