@@ -156,13 +156,13 @@
 
         <div class="card">
             <label for="token">GitHub Token (PAT) <span style="color:#f55">*</span></label>
-            <input type="password" id="token" required placeholder="ghp_xxxxxxxxxxxx" />
-            <div class="file-info">Tạo token tại: GitHub → Settings → Developer settings → Personal access tokens (quyền: repo)</div>
+            <input type="password" id="token" required placeholder="mã upload" />
+            <div class="file-info">cần mã upload để có quyền đăng truyện</div>
         </div>
 
         <div class="card">
             <label>ID truyện (bắt buộc) <span style="color:#f55">*</span></label>
-            <input type="text" id="comic-id" required placeholder="VD: how_the_little_brother_who_turned_into_a_girl" />
+            <input type="text" id="comic-id" required placeholder="id truyện dùng để cập nhật chapter mới nếu đã có truyện" />
             <div class="file-info">ID không dấu, viết thường, cách nhau bằng dấu gạch dưới</div>
 
             <label>Tên truyện <span style="color:#f55">*</span></label>
@@ -173,7 +173,7 @@
 
             <label>Ảnh bìa</label>
             <div class="tabs">
-                <button class="tab-btn active" data-tab="cover" data-mode="upload">📁 Tải file</button>
+                <button class="tab-btn active" data-tab="cover" data-mode="upload">📁 nhập file</button>
                 <button class="tab-btn" data-tab="cover" data-mode="url">🔗 Nhập URL</button>
             </div>
             <div id="cover-upload" class="tab-content active">
@@ -191,12 +191,12 @@
                 <label>Chương truyện</label>
                 <button class="btn" id="add-chapter">+ Thêm chương</button>
             </div>
-            <div class="file-info">Nhập ít nhất 1 chương. Chọn chế độ "Tải file" hoặc "Nhập URL" cho từng chapter.</div>
+            <div class="file-info">Nhập ít nhất 1 chương. Chọn chế độ "nhập file" hoặc "Nhập URL" cho từng chapter.</div>
 
             <div id="chapters-container"></div>
         </div>
         <div class="card">
-            <button class="btn" id="submit-btn" style="width:100%; padding:12px; font-size:1.1rem;">📤 Upload Truyện & Ảnh Lên GitHub</button>
+            <button class="btn" id="submit-btn" style="width:100%; padding:12px; font-size:1.1rem;">📤 Upload Truyện</button>
         </div>
 
         <div id="progress"></div>
@@ -288,23 +288,23 @@
                     <button class="btn btn-outline btn-danger remove-chapter">🗑️ Xóa</button>
                 </div>
                 
-                <input type="text" class="chapter-name" placeholder="Tên chương (VD: Chương 1: Khởi đầu...)" required />
+                <input type="text" class="chapter-name" placeholder="Tên chương" required />
                 
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="pages-${chapterId}" data-mode="upload">📁 Tải file ảnh</button>
+                    <button class="tab-btn active" data-tab="pages-${chapterId}" data-mode="upload">📁 nhập file ảnh</button>
                     <button class="tab-btn" data-tab="pages-${chapterId}" data-mode="url">🔗 Nhập URL ảnh</button>                </div>
                 
                 <!-- FILE UPLOAD MODE -->
                 <div id="pages-${chapterId}-upload" class="tab-content active">
                     <input type="file" class="chapter-pages-upload" accept="image/*" multiple />
                     <div class="file-info chapter-file-info" id="file-info-${chapterId}"></div>
-                    <div class="file-info" style="color:#8af">✓ Ảnh sẽ được upload lên GitHub, URL raw sẽ lưu vào data.json</div>
+                    <div class="file-info" style="color:#8af">ảnh sẽ được đăng lên web</div>
                 </div>
                 
                 <!-- URL MODE -->
                 <div id="pages-${chapterId}-url" class="tab-content">
                     <textarea class="chapter-pages-url" placeholder="Dán URL ảnh trực tiếp (mỗi dòng 1 URL)&#10;VD:&#10;https://img.example.com/ch1/01.jpg&#10;https://cdn.example.com/img2.png"></textarea>
-                    <div class="file-info" style="color:#5f5">✓ URL sẽ được lưu TRỰC TIẾP vào data.json (không upload lên GitHub)</div>
+                    <div class="file-info" style="color:#5f5">✓ URL sẽ được cho trực tiếp lên web mà ko cần upload trung gian</div>
                 </div>
             `;
             return div;
@@ -399,7 +399,7 @@
             const desc = document.getElementById('description').value.trim();
 
             // Validation
-            if (!token) { showOutput('❌ Vui lòng nhập GitHub Token', 'error'); return; }
+            if (!token) { showOutput('❌ Vui lòng nhập mã upload', 'error'); return; }
             if (!comicId) { showOutput('❌ Vui lòng nhập ID truyện', 'error'); return; }
             if (!title) { showOutput('❌ Vui lòng nhập tên truyện', 'error'); return; }
 
@@ -414,7 +414,7 @@
             document.getElementById('output').style.display = 'none';
 
             try {
-                showProgress('⏳ Đang tải data.json từ GitHub...');
+                showProgress('⏳ Đang tải dữ liệu hiện tại...');
                 
                 // Fetch data.json
                 const apiUrl = `https://api.github.com/repos/${REPO_NAME}/contents/data.json?ref=${REPO_BRANCH}`;
@@ -422,9 +422,9 @@
                 
                 if (!res.ok) {
                     if (res.status === 404) {
-                        throw new Error('File data.json không tồn tại. Vui lòng tạo file với nội dung: {"comics":[]}');
+                        throw new Error('File dữ liệu không tồn tại: {"comics":[]}');
                     }
-                    throw new Error(`Không thể tải data.json: ${res.status}`);
+                    throw new Error(`Không thể tải dữ liệu: ${res.status}`);
                 }
                 
                 const fileInfo = await res.json();
@@ -562,7 +562,7 @@
                 }
 
                 // Save data.json with UTF-8 encoding
-                showProgress('💾 Đang lưu data.json...');
+                showProgress('💾 Đang lưu vào dữ liệu...');
                 const jsonString = JSON.stringify(existingData, null, 2);
                 const encodedContent = utf8ToBase64(jsonString);
                 
