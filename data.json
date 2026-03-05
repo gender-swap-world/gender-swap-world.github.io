@@ -504,6 +504,32 @@
       "createdAt": "2026-03-05T07:01:12.396Z",
       "updatedAt": "2026-03-05T07:01:12.396Z",
       "status": "ongoing"
+    },
+    {
+      "id": "chuyensinhthanhnuhiep",
+      "title": "KHI CHUYỂN SINH SANG THẾ GIỚI KHÁC, TÔI TRỞ THÀNH NỮ HIỆP VÀ CẬU TA TRỞ THÀNH MỘT ANH HÙNG",
+      "desc": "Keito Azumi, một chàng trai bình thường, trong một ngày bình thường, cậu và bạn mình bị truck-san gửi đến thế giới khác nhưng cậu lại trở thành nữ chính và bạn cậu trở thành một anh hùng",
+      "cover": "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/covers/chuyensinhthanhnuhiep/1772695508378_1000120305.jpg",
+      "chapters": [
+        {
+          "id": 1,
+          "name": "Chapter 1",
+          "pages": [
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695487089_0_1000120306.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695489320_1_1000120307.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695491549_2_1000120308.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695494648_3_1000120309.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695497609_4_1000120310.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695500177_5_1000120311.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695502943_6_1000120312.jpg",
+            "https://raw.githubusercontent.com/gender-swap-world/gender-swap-world.github.io/main/pages/chuyensinhthanhnuhiep/ch1/1772695505407_7_1000120313.jpg"
+          ],
+          "uploadedAt": "2026-03-05T07:25:08.366Z"
+        }
+      ],
+      "createdAt": "2026-03-05T07:25:10.319Z",
+      "updatedAt": "2026-03-05T07:25:10.319Z",
+      "status": "ongoing"
     }
   ]
 }
