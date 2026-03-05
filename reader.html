@@ -70,14 +70,17 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 10px;
+            line-height: 0; /* ⭐ QUAN TRỌNG: Loại bỏ khoảng cách do line-height */
         }
         
         .page-img {
             width: 100%;
             height: auto;
             display: block;
-            margin: 0 auto 2px;
+            margin: 0; /* ⭐ SỬA: Xóa margin 2px gây khoảng cách */
             background: #000;
+            vertical-align: top; /* ⭐ THÊM: Tránh spacing do inline */
+            image-rendering: auto; /* ⭐ THÊM: Render ảnh mượt hơn */
         }
         
         /* Progress Bar */
@@ -93,10 +96,10 @@
         
         /* Loading */
         .loading {
-            text-align: center;
-            padding: 60px 20px;
+            text-align: center;            padding: 60px 20px;
             color: #888;
-            font-size: 1.1rem;        }
+            font-size: 1.1rem;
+        }
         
         .error {
             text-align: center;
@@ -142,10 +145,10 @@
             background: rgba(44, 44, 44, 0.9);
             color: #ffcc00;
             padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
+            border-radius: 20px;            font-weight: 600;
             font-size: 0.9rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            z-index: 100;
         }
         
         @media (max-width: 600px) {
@@ -191,10 +194,10 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const comicId = urlParams.get('comic');
-        const chapterId = parseInt(urlParams.get('chapter'));
+        const comicId = urlParams.get('comic');        const chapterId = parseInt(urlParams.get('chapter'));
         
-        let comics = [];        let currentComic = null;
+        let comics = [];
+        let currentComic = null;
         let currentChapter = null;
         let currentChapterIndex = 0;
 
@@ -240,10 +243,10 @@
                     <img src="${escapeHtml(pageUrl)}" 
                          class="page-img" 
                          alt="Page ${index + 1}"
-                         loading="${index < 3 ? 'eager' : 'lazy'}"
-                         onerror="this.style.display='none'; console.error('Failed to load:', '${escapeHtml(pageUrl)}')">
+                         loading="${index < 3 ? 'eager' : 'lazy'}"                         onerror="this.style.display='none'; console.error('Failed to load:', '${escapeHtml(pageUrl)}')">
                 `)
-                .join('');            
+                .join('');
+            
             // Setup chapter navigation
             setupChapterNav();
             
@@ -259,11 +262,12 @@
             const nextLink = document.getElementById('next-ch-link');
             const chapterNav = document.getElementById('chapter-nav');
             
-            const totalChapters = currentComic.chapters.length;
+            const sortedChapters = [...currentComic.chapters].sort((a, b) => a.id - b.id);
+            const totalChapters = sortedChapters.length;
             
             // Previous chapter
             if (currentChapterIndex > 0) {
-                const prevChapter = currentComic.chapters.find(ch => ch.id === currentComic.chapters.sort((a,b)=>a.id-b.id)[currentChapterIndex - 1].id);
+                const prevChapter = sortedChapters[currentChapterIndex - 1];
                 if (prevChapter) {
                     const href = `reader.html?comic=${comicId}&chapter=${prevChapter.id}`;
                     prevBtn.disabled = false;
@@ -278,7 +282,7 @@
             
             // Next chapter
             if (currentChapterIndex < totalChapters - 1) {
-                const nextChapter = currentComic.chapters.find(ch => ch.id === currentComic.chapters.sort((a,b)=>a.id-b.id)[currentChapterIndex + 1].id);
+                const nextChapter = sortedChapters[currentChapterIndex + 1];
                 if (nextChapter) {
                     const href = `reader.html?comic=${comicId}&chapter=${nextChapter.id}`;
                     nextBtn.disabled = false;
@@ -288,11 +292,11 @@
                 }
             } else {
                 nextBtn.disabled = true;
-                nextLink.classList.add('disabled');
-            }
+                nextLink.classList.add('disabled');            }
             
             chapterNav.style.display = 'flex';
-        }        
+        }
+        
         // Progress bar & page counter
         function updateProgress() {
             const images = document.querySelectorAll('.page-img');
@@ -337,11 +341,11 @@
         async function init() {
             try {
                 comics = await fetchData();
-                
-                if (!findComicAndChapter()) {
+                                if (!findComicAndChapter()) {
                     document.getElementById('pages-container').innerHTML = 
                         '<div class="error">❌ Không tìm thấy chapter</div>';
-                    return;                }
+                    return;
+                }
                 
                 renderPages();
                 
