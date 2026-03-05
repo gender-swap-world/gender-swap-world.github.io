@@ -596,7 +596,7 @@
                 
             } catch (err) {
                 console.error('Upload error:', err);
-                showOutput(`❌ Lỗi: ${err.message}\n\n💡 Kiểm tra:\n• GitHub Token còn hạn, có quyền repo\n• ID truyện không chứa ký tự đặc biệt\n• URL ảnh hợp lệ (http/https)\n• File data.json tồn tại trong repo`, 'error');
+                showOutput(`❌ Lỗi: ${err.message}\n\n💡 Kiểm tra:\n•mã upload hợp lệ\n• ID truyện không chứa ký tự đặc biệt\n• URL ảnh hợp lệ (http/https)\n• File dữ liệu tồn tại?`, 'error');
             } finally {
                 submitBtn.disabled = false;
             }
